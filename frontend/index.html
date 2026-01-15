@@ -16,19 +16,20 @@
     <header class="navbar">
         <div class="nav-left">AI Tax Assistant</div>
         <nav class="nav-right">
-            <a href="index.html">Home</a>
+            <a href="#home">Home</a>
             <a href="features.html">Features</a>
-            <a href="about.html">About</a>
-            <a href="login.html" class="btn-outline">Sign in</a>
+            <a href="#what-it-does">What it does</a>
+            <a href="signin.html" class="btn-outline">Sign in</a>
             <a href="signup.html" class="btn-primary">Sign up</a>
         </nav>
     </header>
 
     <!-- Page Content -->
+     transition
     <main>
         <!-- value section -->
-        <section class="value-section container">
-            <h2>AI-powered tax help, built for learning</h2>
+        <section class="value-section container" id="home">
+            <h1>AI-powered tax assistant, A smarter way to understand taxes</h1>
             <p>
                 Ask tax questions, understand concepts, and explore AI-driven workflows
                 — all inside a simple web app built as a real-world project.
@@ -37,34 +38,132 @@
 
         <div class="hero">
             <div class="hero-left">
-                <h1>
-                    AI-powered tax assistant<br />
-                    for smart answers
-                </h1>
+                <h2>
+                    Tax chatbot
+                    for clear and <br> smart answers
+                </h2>
 
                 <p>
                     Ask tax-related questions and get instant, AI-driven explanations.
                     Built for learning and demonstration.
                 </p>
+                <div class="feature-scroller">
+                    <div class="scroller-track">
+                        <span>AI-Powered Tax Help</span>
+                        <span>Smart Calculations</span>
+                        <span>Instant Answers</span>
+                        <span>Reduce Errors</span>
+                        <span>Save Time</span>
+                        <span>Beginner Friendly</span>
+                        <span>Real-Time AI Chat</span>
+
+                        <!-- duplicate for seamless loop -->
+                        <span>AI-Powered Tax Help</span>
+                        <span>Smart Calculations</span>
+                        <span>Instant Answers</span>
+                        <span>Reduce Errors</span>
+                        <span>Save Time</span>
+                        <span>Beginner Friendly</span>
+                        <span>Real-Time AI Chat</span>
+                    </div>
+                </div>
+
 
                 <div class="hero-actions">
                     <a href="signup.html" class="btn-primary">Get access</a>
                     <a href="features.html" class="btn-outline">How it works</a>
                 </div>
             </div>
-
             <div class="hero-right">
-                <div class="hero-card">
-                    <p class="card-title">AI Tax Assistant</p>
-                    <p class="card-sub">
-                        Ask questions • Learn concepts • Get explanations
-                    </p>
+                <div class="ai-preview-card">
+                    <div class="ai-header">
+                        <span class="ai-dot"></span>
+                        <span>AI Tax Assistant</span>
+                    </div>
+
+                    <div class="ai-chat">
+                        <div class="ai-msg user">
+                            What is standard deduction?
+                        </div>
+                        <div class="ai-msg ai">
+                            A standard deduction is a fixed dollar amount that taxpayers can subtract from their
+                            adjusted gross income (AGI) to reduce their taxable income. It is typically a simpler
+                            alternative to itemizing deductions, where individual expenses like mortgage interest or
+                            medical bills must be tracked and proven with receipts.
+                        </div>
+                    </div>
+
+                    <div class="ai-footer">
+                        Real-time AI explanations • Built for learning
+                    </div>
                 </div>
+
             </div>
         </div>
 
-        <section class="features">
-            <h2>What this AI helps you with</h2>
+
+        <section class="advantages-section" >
+            <div class="advantages-container">
+
+                <!-- LEFT: Visual / AI card -->
+                <div class="advantages-left">
+                    <div class="ai-adv-card">
+                        <div class="ai-adv-header">
+                            <span>Smart Insights</span>
+                        </div>
+
+                        <div class="ai-adv-content">
+                            <p class="label">Scenario</p>
+                            <p class="value">Old regime vs New regime</p>
+
+                            <p class="label">Recommendation</p>
+                            <p class="highlight">
+                                Choosing between the old and new tax regimes in India depends on your specific financial
+                                situation, primarily your income level and the amount of deductions and exemptions you
+                                can claim. The new tax regime is the default option and is generally better for those
+                                with minimal deductions, while the old tax regime is better if you have substantial
+                                eligible deductions.
+                            </p>
+                        </div>
+
+                        <div class="ai-adv-footer">
+                            Explained in simple terms • No jargon
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RIGHT: Text / Advantages -->
+                <div class="advantages-right">
+                    <h2>Why this AI actually helps</h2>
+                    <p class="subtitle">
+                        Not just answers — clear explanations you can understand and trust.
+                    </p>
+
+                    <ul class="advantages-list">
+                        <li>
+                            <strong>Explains the “why”</strong>
+                            <span>Understand concepts instead of memorizing rules.</span>
+                        </li>
+                        <li>
+                            <strong>Reduces costly mistakes</strong>
+                            <span>Clear guidance prevents wrong assumptions.</span>
+                        </li>
+                        <li>
+                            <strong>Built for learning</strong>
+                            <span>Perfect for students, professionals, and demos.</span>
+                        </li>
+                        <li>
+                            <strong>Saves serious time</strong>
+                            <span>No searching across blogs or PDFs.</span>
+                        </li>
+                    </ul>
+                </div>
+
+            </div>
+        </section>
+
+        <section class="features" id="what-it-does">
+            <h2>What this assistant is built for</h2>
 
             <div class="feature-grid">
                 <div class="feature-card">
@@ -84,11 +183,14 @@
             </div>
         </section>
 
+        add some more
+
         <section class="final-cta">
-            <h2>Experience AI-driven tax guidance</h2>
+            <h2>Start exploring tax concepts with AI</h2>
             <p>Explore how an AI assistant can answer tax questions in seconds.</p>
             <a href="signup.html" class="btn-primary">Get started</a>
         </section>
+
     </main>
 
     <footer class="footer">
@@ -96,7 +198,8 @@
         <div class="footer-links">
             <a href="about.html">About</a>
             <a href="#">Disclaimer</a>
-            <a href="https://github.com/your-username/ai-tax-assistant" target="_blank">
+            <!-- !!!!!!!!! -->
+            <a href="https://github.com/lohithakshith2007/ai-tax-assistant" target="_blank">
                 GitHub
             </a>
         </div>
