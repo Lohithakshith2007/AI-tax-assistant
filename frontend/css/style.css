@@ -61,12 +61,16 @@ a {
 .nav-right a {
     margin-left: 1.2rem;
     text-decoration: none;
+    transition: color 0.2s ease;
     color: var(--text-main);
     font-size: 0.95rem;
+
 }
 
 .nav-right a:hover {
-    opacity: 0.8;
+    color: var(--accent);
+    text-decoration: none;
+    transition: color 0.2s ease;
 }
 
 .nav-right .btn-primary {
@@ -167,6 +171,7 @@ main {
 .hero-left p {
     color: var(--text-muted);
     font-size: 1.05rem;
+    margin-top: 2rem;
 }
 
 .hero-actions a {
@@ -174,7 +179,7 @@ main {
 }
 
 .feature-scroller {
-    margin: 1.5rem 0 2.5rem;
+    margin: 2rem 0 3rem;
     overflow: hidden;
     width: 90%;
     mask-image: linear-gradient(to right,
@@ -401,36 +406,75 @@ main {
 
 .features h2 {
     font-size: 2rem;
-    margin-bottom: 3rem;
+    margin-bottom: 4rem;
 }
 
-.feature-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 1.8rem;
+.features h3 {
+    margin-bottom: 1.5rem;
 }
 
-.feature-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    padding: 2rem;
-    text-align: left;
-}
-
-.feature-card h3 {
-    margin-bottom: 0.6rem;
-}
-
-.feature-card p {
-    color: var(--text-muted);
-    font-size: 0.95rem;
+.bento-card h3::before {
+    content: "✓";
+    position: relative;
+    margin-right: 2px;
+    left: 0;
+    color: var(--accent);
+    font-weight: 700;
 }
 
 #what-it-does {
     scroll-margin-top: 160px;
 }
 
+.bento-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.6rem;
+    margin-top: 3rem;
+    padding: 0 10% 7rem;
+
+}
+
+
+/* Base card */
+.bento-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    padding: 2rem;
+    text-align: left;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.bento-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+}
+
+/* Size variations */
+.bento-card.large {
+    grid-column: span 2;
+    grid-row: span 2;
+}
+
+.bento-card.large2 {
+    grid-column: span 2;
+}
+
+.bento-card.large3 {
+    grid-column: span 3;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .bento-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .bento-card.large {
+        grid-column: span 1;
+    }
+}
 
 /* ===== FINAL CTA ===== */
 .final-cta {
@@ -451,27 +495,103 @@ main {
 }
 
 /* ===== FOOTER ===== */
-.footer {
-    padding: 2rem;
+.site-footer {
+    margin-top: 3rem;
+    padding: 4rem 8% 2rem;
+    background: #0b0b0b;
     border-top: 1px solid var(--border-color);
-    text-align: center;
 }
 
-.footer p {
-    color: var(--text-muted);
+.footer-inner {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 3rem;
+}
+
+.footer-brand {
+    margin-left: 8rem;
+}
+
+.footer-brand h3 {
+    font-size: 1.2rem;
     margin-bottom: 0.8rem;
 }
 
+.footer-brand p {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    max-width: 420px;
+}
+
+.footer-links {
+    margin-left: 10rem;
+}
+
+.footer-links h4,
+.footer-social h4 {
+    margin-bottom: 1rem;
+    font-size: 1rem;
+}
+
+.footer-links ul {
+    list-style: none;
+    padding: 0;
+}
+
+.footer-links li {
+    margin-bottom: 0.6rem;
+}
+
 .footer-links a {
-    margin: 0 0.8rem;
-    color: var(--text-main);
+    color: var(--text-muted);
     text-decoration: none;
-    font-size: 0.9rem;
+    transition: color 0.2s ease;
 }
 
 .footer-links a:hover {
-    opacity: 0.8;
+    color: var(--accent);
 }
+
+.footer-social {
+    margin-left: 5rem;
+}
+
+.social-icons {
+    display: flex;
+    gap: 1rem;
+}
+
+.social-icons a {
+    font-size: 1.4rem;
+    color: var(--text-muted);
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.social-icons a:hover {
+    color: var(--accent);
+    transform: translateY(-2px);
+}
+
+.footer-bottom {
+    margin-top: 7rem;
+    padding-top: 3rem;
+    border-top: 1px solid var(--border-color);
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+@media (max-width: 900px) {
+    .footer-inner {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+
+    .social-icons {
+        justify-content: center;
+    }
+}
+
 
 
 /* ===== SIGN-UP PAGE ===== */
@@ -630,6 +750,7 @@ main {
 /* active classes */
 .nav-right a.active {
     color: var(--accent);
+    transition: color 0.2s ease;
     font-weight: 500;
 }
 
