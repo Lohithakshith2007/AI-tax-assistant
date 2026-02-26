@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Welcome, {{ user.username }}</h2>
+
+<h3>Your Tax History</h3>
+
+{% if calculations %}
+<table border="1" cellpadding="10">
+    <tr>
+        <th>Country</th>
+        <th>Income</th>
+        <th>Taxable Income</th>
+        <th>Estimated Tax</th>
+        <th>Date</th>
+    </tr>
+
+    {% for calc in calculations %}
+    <tr>
+        <td>{{ calc.country }}</td>
+        <td>{{ calc.income }}</td>
+        <td>{{ calc.taxable_income }}</td>
+        <td>{{ calc.estimated_tax }}</td>
+        <td>{{ calc.created_at }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% else %}
+<p>No tax calculations yet.</p>
+{% endif %}
+
+{% endblock %}

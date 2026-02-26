@@ -1,0 +1,15 @@
+# Environment variables
+.env
+.env.local
+.env.development
+.env.production
+
+# Node modules (if using Node.js)
+node_modules/
+
+# Logs
+logs/
+*.log
+
+# DS Store (Mac)
+.DS_Store
