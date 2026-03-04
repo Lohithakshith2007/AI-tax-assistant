@@ -1,5 +1,6 @@
 import json
 from django.http import JsonResponse
+from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 import requests
 from django.conf import settings
@@ -67,3 +68,13 @@ def calculate_tax(request):
 
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=500)
+        
+
+def landing(request):
+    return render(request, "tax_engine/landing.html")
+
+def features(request):
+    return render(request, "tax_engine/features.html")
+
+def about(request):
+    return render(request, "tax_engine/about.html")

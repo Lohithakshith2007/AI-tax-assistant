@@ -22,5 +22,7 @@ urlpatterns = [
     path('', include('accounts.urls')),
     path('', include('dashboard.urls')),
     path('', include('tax_engine.urls')),
+    path('ai/', include('ai_advisor.urls')),
+
 ]
 

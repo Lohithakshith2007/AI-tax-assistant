@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -7,7 +8,7 @@
     <title>AI Tax Assistant</title>
 
     <!-- Global CSS -->
-    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="{% static 'style.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 </head>
 
@@ -18,13 +19,12 @@
         <div class="nav-left">AI Tax Assistant</div>
         <nav class="nav-right">
             <a href="#home">Home</a>
-            <a href="features.html">Features</a>
+            <a href="{% url 'features' %}">Features</a>
             <a href="#what-it-does">What it does</a>
-            <a href="signin.html" class="btn-outline">Sign in</a>
-            <a href="signup.html" class="btn-primary">Sign up</a>
+            <a href="{% url 'signin' %}" target="" class="btn-outline">Sign in</a>
+            <a href="{% url 'signup' %}" class="btn-primary">Sign up</a>
         </nav>
     </header>
-    signupcolor
 
     <!-- Page Content -->
     <main>
@@ -73,8 +73,8 @@
 
 
                 <div class="hero-actions">
-                    <a href="signup.html" class="btn-primary">Get access</a>
-                    <a href="features.html" class="btn-outline">How it works</a>
+                    <a href="{% url 'signup' %}" class="btn-primary">Get access</a>
+                    <a href="{% url 'features' %}" class="btn-outline">How it works</a>
                 </div>
             </div>
             <div class="hero-right">
@@ -103,7 +103,6 @@
 
             </div>
         </div>
-
 
         <section class="advantages-section">
             <div class="advantages-container">
@@ -176,13 +175,7 @@
                         dense, jargon-heavy tax codes into clear, conversational explanations that anyone can
                         understand. By asking questions in your own words, you receive instant summaries of relevant
                         regulations, potential deductions, and filing requirements tailored to your specific situation.
-                        This feature eliminates the need for hours of manual research, giving you the confidence to make
-                        informed financial decisions without needing a professional background in tax law. By asking
-                        questions in your own words, you receive instant summaries of relevant regulations, potential
-                        deductions, and filing requirements tailored to your specific situation. Whether you are using
-                        it to master a new skill or to present a complex idea to an audience, the built-in
-                        'demonstration-ready' layout ensures that your workflow is clear, logical, and visually
-                        engaging.</p>
+                    </p>
                 </div>
 
                 <div class="bento-card">
@@ -198,29 +191,21 @@
                 <!-- new 3 -->
                 <div class="bento-card ">
                     <h3> Built for learning</h3>
-                    <p>Optimized to teach, not automate blindly. Information is delivered in a structured hierarchy to
+                    <p> Information is delivered in a structured hierarchy to
                         prevent cognitive overload and promote deep comprehension.</p>
                 </div>
 
-                <div class="bento-card large2">
+                <div class="bento-card ">
                     <h3> Context-aware guidance</h3>
-                    <p>Answers adapt based on your question instead of using generic templates. The AI doesn't just give
-                        generic answers; it tailors its explanation based on the specific context of your query. This
-                        deep situational awareness transforms the interaction from a simple Q&A into a sophisticated,
-                        personalized advisory experience that scales with the complexity of the user's needs.</p>
+                    <p>Answers adapt based on your question instead of using generic templates.</p>
                 </div>
 
-                <div class="bento-card large3">
+                <div class="bento-card ">
                     <h3> Clear explanations</h3>
-                    <p>Concepts are explained step by step so you understand the logic behind every answer. Each
-                        explanation follows a rigorous hierarchy of information,<br> starting with foundational
+                    <p> Each
+                        explanation follows a rigorous hierarchy of information, starting with foundational
                         principles
-                        before moving into specific technical applications. This layered delivery ensures that users
-                        grasp the 'Core Why' of a solution, which prevents the gaps in understanding typically found in
-                        automated responses. The engine identifies key transition points in the reasoning process,
-                        highlighting the relationship between different data points to provide a cohesive and holistic
-                        view of the subject matter. Consequently, the platform functions not just as an answer engine,
-                        but as a comprehensive tool for intellectual and professional development.</p>
+                        before moving into specific technical applications.</p>
                 </div>
             </div>
         </section>
@@ -228,8 +213,10 @@
         <section class="final-cta">
             <h2>Start exploring tax concepts with AI</h2>
             <p>Explore how an AI assistant can answer tax questions in seconds.</p>
-            <a href="signup.html" class="btn-primary">Get started</a>
+            <a href="{% url 'signup' %}" class="btn-primary">Get started</a>
         </section>
+
+
 
     </main>
 
@@ -249,10 +236,10 @@
             <div class="footer-links">
                 <h4>Quick links</h4>
                 <ul>
-                    <li><a href="index.html">Home</a></li>
+                    <li><a href="#home">Home</a></li>
                     <li><a href="#what-it-does">What it does</a></li>
-                    <li><a href="features.html">Features</a></li>
-                    <li><a href="about.html">About</a></li>
+                    <li><a href="{% url 'features' %}">Features</a></li>
+                    <li><a href="{% url 'about' %}">About</a></li>
                 </ul>
             </div>
 
@@ -260,10 +247,11 @@
             <div class="footer-social">
                 <h4>Connect</h4>
                 <div class="social-icons">
-                    <a href="https://github.com/YOUR_USERNAME" target="_blank" aria-label="GitHub">
+                    <a href="https://github.com/Lohithakshith2007/AI-tax-assistant" target="_blank" aria-label="GitHub">
                         <i class="fab fa-github"></i>
                     </a>
-                    <a href="https://linkedin.com/in/YOUR_USERNAME" target="_blank" aria-label="LinkedIn">
+                    <a href="https://www.linkedin.com/in/lohithakshith-gade-601aa1385/" target="_blank"
+                        aria-label="LinkedIn">
                         <i class="fab fa-linkedin"></i>
                     </a>
                 </div>

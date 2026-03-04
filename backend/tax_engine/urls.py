@@ -1,6 +1,8 @@
 from django.urls import path
-from .views import calculate_tax
+from . import views
 
 urlpatterns = [
-    path('api/calculate-tax/', calculate_tax, name='calculate_tax'),
-]
+    path("", views.landing, name="landing"),
+    path("features/", views.features, name="features"),
+    path("about/", views.about, name="about"),
+]   

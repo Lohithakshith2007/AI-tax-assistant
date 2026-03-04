@@ -1,15 +1,55 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth import login
+from django.contrib.auth.models import User
+from django.contrib import messages
+from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login
 
-def register_view(request):
-    if request.method == 'POST':
-        form = UserCreationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
+# temporary
+from django.contrib.auth import logout
+
+def signup(request):
+    if request.method == "POST":
+        username = request.POST.get("username")
+        email = request.POST.get("email")
+        password = request.POST.get("password")
+        confirm_password = request.POST.get("confirm_password")
+
+        if password != confirm_password:
+            messages.error(request, "Passwords do not match")
+            return redirect("signup")
+
+        if User.objects.filter(username=username).exists():
+            messages.error(request, "Username already exists")
+            return redirect("signup")
+
+        user = User.objects.create_user(
+            username=username,
+            email=email,
+            password=password
+        )
+
+        messages.success(request, "Account created successfully!")
+        return redirect("signin")
+
+    return render(request, "accounts/signup.html")  
+
+def signin(request):
+    if request.method == "POST":
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+
+        user = authenticate(request, username=username, password=password)
+
+        if user is not None:
             login(request, user)
-            return redirect('dashboard')
-    else:
-        form = UserCreationForm()
-    
-    return render(request, 'register.html', {'form': form})
+            return redirect("chat")  # or dashboard later
+        else:
+            messages.error(request, "Invalid username or password")
+            return redirect("signin")
+
+    return render(request, "accounts/signin.html")
+
+# temporary logout
+def logout_view(request):
+    logout(request)
+    return redirect("signin")

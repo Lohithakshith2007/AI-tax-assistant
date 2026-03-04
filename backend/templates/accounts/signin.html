@@ -1,0 +1,75 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign Up - AI Tax Assistant</title>
+  <link rel="stylesheet" href="{% static 'style.css' %}">
+</head>
+
+<body>
+
+  <!-- NAVBAR -->
+  <header class="navbar">
+    <div class="nav-left">AI Tax Assistant</div>
+    <nav class="nav-right">
+      <a href="{% url 'landing' %}">Home</a>
+      <a href="{% url 'features' %}">Features</a>
+      <a href="{% url 'landing' %}#what-it-does">What it does</a>
+      <a href="{% url 'signin' %}" class="btn-outline">Sign in</a>
+      <a href="{% url 'signup' %}" class="btn-primary">Sign up</a>
+    </nav>
+  </header>
+
+  <!-- SIGN-UP MAIN -->
+  <main class="signup-page">
+    <div class="signup-left">
+      <h2>Learn tax concepts with AI</h2>
+      <p class="signup-subtext">
+        A simple AI-powered assistant designed to help students and learners
+        understand taxation through real-world questions.
+      </p>
+
+      <ul class="signup-features">
+        <li>Ask tax questions in natural language</li>
+        <li>Get clear, structured explanations</li>
+        <li>Explore AI-driven workflows</li>
+        <li>Built using real-world web technologies</li>
+      </ul>
+
+      <p class="signup-note">
+        No payment required • Built for learning & portfolios
+      </p>
+    </div>
+
+
+    <div class="signup-right">
+      <form method="POST" action="{% url 'signin' %}">
+        {% csrf_token %}
+        <label for="fullname">User Name</label>
+        <input type="text" name="username" id="fullname" placeholder="John Doe" required />
+
+        <label for="email">Email</label>
+        <input type="email" name="email" id="email" placeholder="you@example.com" required />
+
+        <label for="password">Password</label>
+        <input type="password" name="password" id="password" placeholder="Enter password" required />
+
+        {% if messages %}
+        {% for message in messages %}
+        <p>{{ message }}</p>
+        {% endfor %}
+        {% endif %}
+
+        <button type="submit" class="btn-primary">Sign In</button>
+
+        <p class="login-link">Don't have an account? <a href="{% url 'signup' %}">Sign Up</a></p>
+      </form>
+    </div>
+  </main>
+
+</body>
+
+</html>

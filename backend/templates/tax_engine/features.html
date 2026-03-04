@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -7,7 +8,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <!-- Same CSS as landing page -->
-  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="{% static 'style.css' %}">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 
 </head>
@@ -18,11 +19,11 @@
   <header class="navbar">
     <div class="nav-left">AI Tax Assistant</div>
     <nav class="nav-right">
-      <a href="index.html#home">Home</a>
+      <a href="{% url 'landing' %}#home">Home</a>
       <a href="features.html" class="active">Features</a>
-      <a href="index.html#what-it-does">What it does</a>
-      <a href="signin.html" class="btn-outline">Sign in</a>
-      <a class="btn-primary" href="signup.html">Sign up</a>
+      <a href="{% url 'landing' %}#what-it-does">What it does</a>
+      <a href="{% url 'signin' %}" class="btn-outline">Sign in</a>
+      <a class="btn-primary" href="{% url 'signup' %}">Sign up</a>
     </nav>
   </header>
   transition

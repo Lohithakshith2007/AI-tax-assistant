@@ -73,21 +73,19 @@ a {
     transition: color 0.2s ease;
 }
 
-.nav-right .btn-primary {
-    color: #000;
-}
+
 
 
 /* ===== BUTTONS ===== */
 .btn-primary {
     background: var(--accent);
-    color: #000;
+    color: #000 !important;
     padding: 0.6rem 1.2rem;
     border-radius: 8px;
     font-weight: 600;
     border: none;
     cursor: pointer;
-    transition: opacity 0.15s ease, transform 0.15s ease;
+    transition: opacity 0.15s ease, transform 0.15s ease !important;
 }
 
 .btn-primary:hover {
@@ -422,6 +420,12 @@ main {
     font-weight: 700;
 }
 
+.bento-card p {
+    line-height: 2rem;
+    font-size: 1.05 rem;
+
+}
+
 #what-it-does {
     scroll-margin-top: 160px;
 }
@@ -431,7 +435,7 @@ main {
     grid-template-columns: repeat(3, 1fr);
     gap: 1.6rem;
     margin-top: 3rem;
-    padding: 0 10% 7rem;
+    padding: 0 7% 7rem;
 
 }
 
@@ -448,7 +452,7 @@ main {
 
 .bento-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
 }
 
 /* Size variations */
@@ -458,7 +462,7 @@ main {
 }
 
 .bento-card.large2 {
-    grid-column: span 2;
+    grid-column: span 3;
 }
 
 .bento-card.large3 {
