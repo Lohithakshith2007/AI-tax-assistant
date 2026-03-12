@@ -7,6 +7,11 @@ const sendBtn = document.getElementById("sendBtn");
 const newChatBtn = document.getElementById("newChatBtn");
 const chatInput = document.getElementById("chatInput");
 
+marked.setOptions({
+    breaks: true,
+    gfm: true
+});
+
 /* LOAD CHAT FROM STORAGE */
 let chat = JSON.parse(localStorage.getItem("chat")) || [];
 renderChat();
@@ -29,7 +34,7 @@ async function sendMessage() {
     // temporary typing message
     const typingMsg = document.createElement("div");
     typingMsg.className = "ai-msg ai typing";
-    typingMsg.textContent = "AI is typing...";
+    typingMsg.textContent = "...";
     messages.appendChild(typingMsg);
     messages.scrollTop = messages.scrollHeight;
 
@@ -39,7 +44,10 @@ async function sendMessage() {
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({ message: text })
+            body: JSON.stringify({
+                message: text,
+                history: chat
+            })
         });
 
         const data = await response.json();
@@ -63,17 +71,15 @@ async function sendMessage() {
 function addMessage(text, sender) {
     const msg = document.createElement("div");
     msg.className = `ai-msg ${sender}`;
+
     msg.innerHTML = marked.parse(text);
+
     messages.appendChild(msg);
 
     chat.push({ sender, text });
     localStorage.setItem("chat", JSON.stringify(chat));
 
-    // smooth scroll to bottom
-    messages.scrollTo({
-        top: messages.scrollHeight,
-        behavior: "smooth"
-    });
+    messages.scrollTop = messages.scrollHeight;
 }
 
 /* RENDER SAVED CHAT */
@@ -85,7 +91,10 @@ function renderChat() {
     chat.forEach(m => {
         const msg = document.createElement("div");
         msg.className = `ai-msg ${m.sender}`;
-        msg.textContent = m.text;
+
+        // Parse markdown again when rendering
+        msg.innerHTML = marked.parse(m.text);
+
         messages.appendChild(msg);
     });
 }
