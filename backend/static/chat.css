@@ -143,18 +143,51 @@ body {
     overflow-y: auto;
     display: flex;
     flex-direction: column;
+    scroll-behavior: smooth;
+}
+
+/* Scrollbar width */
+.messages::-webkit-scrollbar {
+    width: 6px;
+}
+
+/* Scrollbar track */
+.messages::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+/* Scrollbar handle */
+.messages::-webkit-scrollbar-thumb {
+    background: #555;
+    border-radius: 10px;
+}
+
+/* Hover effect */
+.messages::-webkit-scrollbar-thumb:hover {
+    background: #888;
 }
 
 /* CHAT BUBBLES (YOUR THEME) */
 .ai-msg {
     font-size: 0.85rem;
     margin-bottom: 0.6rem;
-    max-width: 700px;
+    max-width: 70%;
     padding: 14px 16px;
     border-radius: 12px;
     line-height: 1.5;
     animation: fadeIn 0.2s ease-in-out;
+}
 
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 #messages {

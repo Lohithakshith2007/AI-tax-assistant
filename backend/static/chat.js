@@ -29,6 +29,7 @@ async function sendMessage() {
     chatInput.classList.remove("centered");
 
     addMessage(text, "user");
+    scrollToBottom();
     input.value = "";
 
     // temporary typing message
@@ -57,6 +58,7 @@ async function sendMessage() {
 
         if (data.reply) {
             addMessage(data.reply, "ai");
+            scrollToBottom();
         } else {
             addMessage("Something went wrong.", "ai");
         }
@@ -80,6 +82,18 @@ function addMessage(text, sender) {
     localStorage.setItem("chat", JSON.stringify(chat));
 
     messages.scrollTop = messages.scrollHeight;
+
+    scrollToBottom();
+}
+
+function scrollToBottom() {
+    const chat = document.querySelector(".messages");
+
+    if (!chat) return;
+
+    requestAnimationFrame(() => {
+        chat.scrollTop = chat.scrollHeight;
+    });
 }
 
 /* RENDER SAVED CHAT */
