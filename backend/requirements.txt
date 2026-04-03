@@ -1,0 +1,4 @@
+Django>=5.0,<7.0
+djangorestframework>=3.14
+groq>=0.4.0
+python-dotenv>=1.0.0
