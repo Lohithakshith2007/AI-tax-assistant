@@ -13,6 +13,9 @@
     <link rel="stylesheet" href="{% static 'style.css' %}">
     <link rel="stylesheet" href="{% static 'dashboard.css' %}">
     
+    <!-- Markdown Pre-processor -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
     {% block extra_head %}{% endblock %}
 </head>
 
@@ -90,9 +93,9 @@
         <!-- PAGE CONTENT -->
         <main class="app-content container-fluid">
             {% if messages %}
-                <div class="messages-container">
+                <div style="display: none;">
                     {% for message in messages %}
-                        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                        <div class="django-message-data" data-level="{{ message.tags }}">{{ message }}</div>
                     {% endfor %}
                 </div>
             {% endif %}

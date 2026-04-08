@@ -1,4 +1,5 @@
 {% extends 'base_app.html' %}
+{% load tax_tags %}
 
 {% block title %}Settings - AI Tax Assistant{% endblock %}
 {% block page_title %}Account Preferences{% endblock %}
@@ -14,9 +15,10 @@
         </div>
         <div class="card-body">
             <form class="modern-form">
-                <div class="form-group">
+                <div class="form-group mb-4">
                     <label for="default_country"><i class="fa-solid fa-earth-americas"></i> Preferred Tax Jurisdiction</label>
-                    <div class="stylish-select-wrapper">
+                    <div class="custom-select-container-wrapper">
+                        <!-- Select will be replaced by custom dropdown logic in JS -->
                         <select id="default_country" name="default_country">
                             <option value="india">India (Income Tax Department)</option>
                             <option value="us" selected>United States (IRS Internal Revenue Service)</option>
@@ -26,14 +28,21 @@
                         </select>
                     </div>
                 </div>
-                <div class="form-group mt-4">
-                    <label class="flex-between align-center">
-                        <span class="text-sm">Auto-apply latest fiscal amendments</span>
-                        <label class="switch">
-                            <input type="checkbox" checked>
-                            <span class="slider"></span>
-                        </label>
+                <div class="settings-row">
+                    <div class="toggle-info">
+                        <span class="text-sm font-weight-bold">Automatic Updates</span>
+                        <p class="text-muted text-xs">Auto-apply latest fiscal amendments following regime changes.</p>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" checked>
+                        <span class="slider"></span>
                     </label>
+                </div>
+
+                <div class="mt-4 pt-3" style="border-top: 1px solid var(--border-color);">
+                    <button type="button" class="btn-primary w-100" style="padding: 1rem;" onclick="showToast('Configuration updated successfully.', 'success')">
+                        <i class="fa-solid fa-cloud-arrow-up"></i> Sync & Save Preferences
+                    </button>
                 </div>
             </form>
         </div>
@@ -43,14 +52,14 @@
     <div class="card card-glow-hover settings-card">
         <div class="card-header">
             <h4 class="settings-group-title"><i class="fa-solid fa-bell"></i> Communication Channels</h4>
-            <p class="text-muted text-sm">Control how and when you receive critical tax law alerts.</p>
+            <p class="text-muted text-sm">Manage critical tax law alerts and periodic reporting schedules.</p>
         </div>
         <div class="card-body">
-            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-                <div class="flex-between align-center">
-                    <div>
+            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                <div class="settings-row">
+                    <div class="toggle-info">
                         <strong class="d-block mb-1 text-sm">Critical Tax Law Alerts</strong>
-                        <span class="text-muted text-xs">Get notified immediately when new tax regimes are announced.</span>
+                        <span class="text-muted text-xs">Immediate notifications for new multi-state tax regimes.</span>
                     </div>
                     <label class="switch">
                         <input type="checkbox" checked>
@@ -58,8 +67,8 @@
                     </label>
                 </div>
 
-                <div class="flex-between align-center">
-                    <div>
+                <div class="settings-row">
+                    <div class="toggle-info">
                         <strong class="d-block mb-1 text-sm">Weekly Activity Report</strong>
                         <span class="text-muted text-xs">A comprehensive summary of your weekly tax estimations.</span>
                     </div>
@@ -69,10 +78,10 @@
                     </label>
                 </div>
 
-                <div class="flex-between align-center">
-                    <div>
+                <div class="settings-row">
+                    <div class="toggle-info">
                         <strong class="d-block mb-1 text-sm">AI Training Participation</strong>
-                        <span class="text-muted text-xs">Help improve AI suggestions by sharing anonymized calculation metadata.</span>
+                        <span class="text-muted text-xs">Help improve AI suggestions by sharing anonymized metadata.</span>
                     </div>
                     <label class="switch">
                         <input type="checkbox">
@@ -90,19 +99,13 @@
             <p class="text-muted text-sm">Manage your data retention preferences and account lifecycle.</p>
         </div>
         <div class="card-body">
-            <div class="danger-zone-container flex-between align-center" style="background: rgba(239, 68, 68, 0.03); border: 1px solid rgba(239, 68, 68, 0.1);">
-                <div style="padding-right: 1.5rem;">
+            <div class="danger-outline-box">
+                <div class="danger-info">
                     <strong class="d-block mb-1 text-danger">Purge Account Data</strong>
-                    <span class="text-muted text-xs">Permanently delete all tax calculation history and AI chat logs from our servers.</span>
+                    <span class="text-muted text-xs">Permanently delete all tax calculation history and AI chat logs.</span>
                 </div>
-                <button type="button" class="btn-danger-glow" onclick="confirm('Permanent deletion requested. Proceed?')">
+                <button type="button" class="btn-danger-glow" onclick="if(confirm('Permanent deletion requested. Proceed?')) showToast('Data purge initiated.', 'success')">
                     <i class="fa-solid fa-trash-can"></i> Purge Data
-                </button>
-            </div>
-            
-            <div class="mt-4 text-center">
-                <button type="button" class="btn-primary w-100" style="padding: 1rem;" onclick="alert('Configuration updated successfully.')">
-                    <i class="fa-solid fa-cloud-arrow-up"></i> Sync & Save Preferences
                 </button>
             </div>
         </div>

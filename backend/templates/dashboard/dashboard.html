@@ -1,37 +1,38 @@
 {% extends 'base_app.html' %}
+{% load tax_tags %}
 
 {% block title %}Overview - AI Tax Assistant{% endblock %}
 {% block page_title %}Overview{% endblock %}
 
 {% block content %}
-<div class="dashboard-grid">
+<div class="dashboard-grid fade-in">
     
     <!-- STATS ROW -->
     <div class="stats-container">
         <div class="stat-card">
-            <div class="stat-icon"><i class="fa-solid fa-file-invoice" style="color:var(--accent);"></i></div>
+            <div class="stat-icon"><i class="fa-solid fa-file-invoice" style="color:var(--accent-neon);"></i></div>
             <div class="stat-info">
                 <span class="stat-label">Calculations</span>
                 <span class="stat-value format-number">{{ total_calculations }}</span>
             </div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon"><i class="fa-solid fa-coins" style="color:var(--accent);"></i></div>
+            <div class="stat-icon"><i class="fa-solid fa-coins" style="color:var(--accent-neon);"></i></div>
             <div class="stat-info">
                 <span class="stat-label">Total Tax Est.</span>
-                <span class="stat-value format-number">{{ total_tax_paid }}</span>
+                <span class="stat-value">{{ last_country|currency_symbol }}<span class="format-number">{{ total_tax_paid }}</span></span>
             </div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon"><i class="fa-solid fa-earth-americas" style="color:var(--accent);"></i></div>
+            <div class="stat-icon"><i class="fa-solid fa-earth-americas" style="color:var(--accent-neon);"></i></div>
             <div class="stat-info">
                 <span class="stat-label">Last Region</span>
-                <span class="stat-value" style="text-transform: capitalize;">{{ last_country }}</span>
+                <span class="stat-value">{{ last_country|country_display }}</span>
             </div>
         </div>
     </div>
 
-    <!-- QUICK ACTIONS -->
+    <!-- QUICK ACTIONS BANNER -->
     <div class="card mt-2 mb-4" style="background: linear-gradient(135deg, rgba(199,240,0,0.1) 0%, rgba(0,0,0,0) 100%); position: relative; overflow: hidden;">
         <div style="position: absolute; top: -50px; right: -50px; width: 200px; height: 200px; background: radial-gradient(circle, rgba(199,240,0,0.15) 0%, rgba(0,0,0,0) 70%); border-radius: 50%;"></div>
         <div class="flex-between align-center p-4 banner-flex" style="flex-wrap: wrap; gap: 2rem;">
@@ -40,7 +41,7 @@
                 <p class="text-muted text-sm mb-4" style="line-height: 1.6; max-width: 600px;">Use our AI-powered calculator to get instant breakdowns, smart deduction strategies, and compliance checks customized for your operational region.</p>
                 <div style="display: flex; gap: 1rem;">
                     <a href="{% url 'calculator' %}" class="btn-primary"><i class="fa-solid fa-calculator"></i> Open Tax Calculator</a>
-                    <a href="{% url 'chat' %}" class="btn-outline"><i class="fa-solid fa-robot"></i> Consult AI</a>
+                    <a href="{% url 'chat' %}" class="btn-outline"><i class="fa-solid fa-robot"></i> Consult AI Advisor</a>
                 </div>
             </div>
             <div style="font-size: 8rem; color: rgba(255,255,255,0.03); transform: rotate(15deg);">
@@ -52,36 +53,41 @@
     <!-- RECENT CALCULATIONS -->
     <div class="card mt-4">
         <div class="card-header flex-between">
-            <h3>Recent Calculations</h3>
-            <a href="{% url 'history' %}" class="btn-outline" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;">View all</a>
+            <h3>Recent Analysis Activity</h3>
+            <a href="{% url 'history' %}" class="btn-outline" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;">View all history</a>
         </div>
         <div class="card-body p-0">
             {% if calculations %}
             <div class="table-responsive">
-                <table class="table table-hover table-striped">
+                <table class="table table-hover">
                     <thead>
                         <tr>
                             <th>Date</th>
                             <th>Country</th>
-                            <th>Income</th>
-                            <th>Est. Tax</th>
+                            <th>Gross Income</th>
+                            <th>Tax Liability</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for calc in calculations %}
                         <tr>
-                            <td>{{ calc.created_at|date:"M d, Y" }}</td>
-                            <td style="text-transform: capitalize;"><span class="badge badge-info">{{ calc.country }}</span></td>
-                            <td class="format-number">{{ calc.income }}</td>
-                            <td class="text-accent font-weight-bold format-number">{{ calc.estimated_tax }}</td>
+                            <td class="text-muted text-sm">{{ calc.created_at|date:"M d, Y" }}</td>
+                            <td style="text-transform: capitalize;">
+                                <span class="badge" style="background: rgba(199,240,0,0.05); border: 1px solid rgba(199,240,0,0.1); color: var(--accent-neon);">{{ calc.country }}</span>
+                            </td>
+                            <td class="text-sm">{{ calc.country|currency_symbol }}<span class="format-number">{{ calc.income }}</span></td>
+                            <td class="text-accent font-weight-bold">
+                                {{ calc.country|currency_symbol }}<span class="format-number">{{ calc.estimated_tax }}</span>
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
             {% else %}
-            <div class="empty-state">
-                <p>No calculations yet. Use the calculator to get started!</p>
+            <div class="empty-state p-5 text-center">
+                <p class="text-muted">No calculations yet. Start your first analysis to see data here.</p>
+                <a href="{% url 'calculator' %}" class="btn-outline mt-3" style="display: inline-flex;">Calculate Now</a>
             </div>
             {% endif %}
         </div>

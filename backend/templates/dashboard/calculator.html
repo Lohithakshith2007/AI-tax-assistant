@@ -1,10 +1,11 @@
 {% extends 'base_app.html' %}
+{% load tax_tags %}
 
 {% block title %}Tax Calculator - AI Tax Assistant{% endblock %}
 {% block page_title %}Tax Calculator{% endblock %}
 
 {% block content %}
-<div class="calc-vertical-container">
+<div class="calc-vertical-container fade-in">
 
     <!-- CALCULATOR FORM -->
     <div class="card">
@@ -16,14 +17,14 @@
         <div class="card-body">
             <form id="taxCalcForm" class="modern-form">
                 <div class="form-group">
-                    <label for="country">Country Jurisdiction</label>
-                    <div class="stylish-select-wrapper">
+                    <label for="country">Tax Jurisdiction</label>
+                    <div class="stylish-select-container">
                         <select id="country" name="country" required>
-                            <option value="india">India</option>
-                            <option value="us">United States</option>
-                            <option value="uk">United Kingdom</option>
-                            <option value="canada">Canada</option>
-                            <option value="australia">Australia</option>
+                            <option value="india">India (Income Tax Department)</option>
+                            <option value="us" selected>United States (IRS Internal Revenue Service)</option>
+                            <option value="uk">United Kingdom (HMRC Revenue & Customs)</option>
+                            <option value="canada">Canada (CRA Revenue Agency)</option>
+                            <option value="australia">Australia (ATO Taxation Office)</option>
                         </select>
                     </div>
                 </div>
@@ -60,13 +61,16 @@
                 <div>
                     <span class="text-muted text-sm d-block mb-1 font-weight-bold"
                         style="text-transform: uppercase;">Taxable Income</span>
-                    <span class="font-weight-bold" style="font-size: 1.5rem; color: var(--text-main);"
-                        id="resTaxable">0</span>
+                    <span class="font-weight-bold" style="font-size: 1.5rem; color: var(--text-main);">
+                        <span class="results-currency">$</span><span id="resTaxable">0</span>
+                    </span>
                 </div>
                 <div style="text-align: right;">
                     <span class="text-accent text-sm d-block mb-1 font-weight-bold"
                         style="text-transform: uppercase;">Estimated Tax</span>
-                    <span class="font-weight-bold text-accent" style="font-size: 1.5rem;" id="resTax">0</span>
+                    <span class="font-weight-bold text-accent" style="font-size: 1.5rem;">
+                        <span class="results-currency">$</span><span id="resTax">0</span>
+                    </span>
                 </div>
             </div>
 
@@ -79,7 +83,7 @@
                             <th>From</th>
                             <th>To</th>
                             <th>Rate</th>
-                            <th>Tax</th>
+                            <th>Tax Contribution</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -89,13 +93,13 @@
             </div>
 
             <!-- AI Suggestions -->
-            <div class="ai-box m-3 mt-4">
-                <h4><span class="ai-dot"></span> AI Advisor Suggestions</h4>
-                <div id="aiSuggestions" class="ai-content mb-4">
+            <div class="ai-box m-3 mt-4" style="background: rgba(199,240,0,0.03); border: 1px solid rgba(199,240,0,0.1);">
+                <h4 style="color: var(--accent-neon);"><span class="ai-dot"></span> AI Advisor Suggestions</h4>
+                <div id="aiSuggestions" class="ai-content ai-rendered-content mb-4" style="line-height: 1.7;">
                     <!-- Markdown rendered here -->
                 </div>
 
-                <hr class="nav-divider" style="margin: 1.5rem 0;">
+                <hr class="nav-divider" style="margin: 1.5rem 0; opacity: 0.1;">
 
                 <div class="text-center">
                     <p class="text-muted text-sm mb-3">Want more specific advice based on this breakdown?</p>
@@ -107,7 +111,4 @@
     </div>
 
 </div>
-
-<!-- Add marked.js for markdown rendering -->
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 {% endblock %}

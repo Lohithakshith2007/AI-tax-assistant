@@ -1,3 +1,26 @@
+/* --- GLOBAL TOAST SYSTEM --- */
+function showToast(message, type = 'success') {
+    let container = document.querySelector('.toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.className = 'toast-container';
+        document.body.appendChild(container);
+    }
+
+    const toast = document.createElement('div');
+    toast.className = `toast-custom toast-${type}`;
+    toast.innerHTML = `
+        <i class="fa-solid ${type === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation'}"></i>
+        <span>${message}</span>
+    `;
+    container.appendChild(toast);
+
+    setTimeout(() => {
+        toast.classList.add('fade-out');
+        setTimeout(() => toast.remove(), 400);
+    }, 3000);
+}
+
 document.addEventListener("DOMContentLoaded", () => {
 
     /* --- SIDEBAR TOGGLE --- */
@@ -6,7 +29,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (toggleBtn && sidebar) {
         toggleBtn.addEventListener('click', () => {
-            // on mobile, it slides in. On desktop, it collapses.
             if (window.innerWidth <= 768) {
                 sidebar.classList.toggle('active');
             } else {
@@ -15,7 +37,14 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    /* --- DROPDOWN MENU --- */
+    // Capture Django messages and turn them into toasts
+    const djangoMessages = document.querySelectorAll('.django-message-data');
+    djangoMessages.forEach(msg => {
+        showToast(msg.textContent.trim(), msg.dataset.level === 'success' ? 'success' : 'error');
+        msg.remove();
+    });
+
+    /* --- USER DROPDOWN (TOPBAR) --- */
     const dropdownTrigger = document.getElementById('dropdownTrigger');
     const dropdownMenu = document.getElementById('dropdownMenu');
 
@@ -40,59 +69,146 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    /* --- NUMBER FORMATTING --- */
-    document.querySelectorAll(".format-number").forEach(el => {
-        const val = parseFloat(el.textContent.replace(/,/g, ''));
-        if (!isNaN(val)) {
-            el.textContent = val.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
-        }
-    });
+    /* --- CURRENCY MAPPING & DYNAMIC SYMBOLS --- */
+    const CURRENCY_MAP = {
+        'india': '₹',
+        'us': '$',
+        'usa': '$',
+        'usd': '$',
+        'uk': '£',
+        'canada': 'C$',
+        'australia': 'A$'
+    };
 
-    /* --- HISTORY SEARCH --- */
-    const searchInput = document.getElementById('historySearch');
-    if (searchInput) {
-        searchInput.addEventListener('keyup', function() {
-            const filter = this.value.toLowerCase();
-            const rows = document.querySelectorAll('#historyTable tbody tr');
-            
-            rows.forEach(row => {
-                const text = row.textContent.toLowerCase();
-                if (text.includes(filter)) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
+    function updateCurrencySymbols(country) {
+        const symbol = CURRENCY_MAP[country.toLowerCase()] || '$';
+        document.querySelectorAll('.dynamic-currency').forEach(el => {
+            el.textContent = symbol;
+        });
+    }
+
+    /* --- CUSTOM IMPRESSIVE DROPDOWN --- */
+    function initCustomSelects() {
+        document.querySelectorAll('select:not(.no-custom)').forEach(select => {
+            if (select.parentElement.classList.contains('custom-select-container')) return;
+
+            const container = document.createElement('div');
+            container.className = 'custom-select-container';
+            select.parentNode.insertBefore(container, select);
+            container.appendChild(select);
+            select.style.display = 'none';
+
+            const trigger = document.createElement('div');
+            trigger.className = 'custom-select-trigger';
+            trigger.innerHTML = `<span>${select.options[select.selectedIndex].text}</span> <i class="fa-solid fa-chevron-down"></i>`;
+            container.appendChild(trigger);
+
+            const optionsList = document.createElement('div');
+            optionsList.className = 'custom-options';
+
+            Array.from(select.options).forEach((opt, idx) => {
+                const oDiv = document.createElement('div');
+                oDiv.className = `custom-option ${opt.selected ? 'selected' : ''}`;
+                oDiv.textContent = opt.text;
+                oDiv.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    select.selectedIndex = idx;
+                    trigger.querySelector('span').textContent = opt.text;
+                    optionsList.querySelectorAll('.custom-option').forEach(el => el.classList.remove('selected'));
+                    oDiv.classList.add('selected');
+                    container.classList.remove('active');
+                    
+                    // Trigger native change event
+                    select.dispatchEvent(new Event('change'));
+                });
+                optionsList.appendChild(oDiv);
+            });
+            container.appendChild(optionsList);
+
+            trigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.querySelectorAll('.custom-select-container').forEach(c => {
+                    if (c !== container) c.classList.remove('active');
+                });
+                container.classList.toggle('active');
             });
         });
     }
 
-    /* --- MARKED SETUP --- */
-    if (typeof marked !== 'undefined') {
-        marked.setOptions({ breaks: true, gfm: true });
+    initCustomSelects();
+    document.addEventListener('click', () => {
+        document.querySelectorAll('.custom-select-container').forEach(c => c.classList.remove('active'));
+    });
+
+    // Special listener for Country selection to update symbols
+    const mainCountrySelect = document.querySelector('select[name="country"], select[name="default_country"]');
+    if (mainCountrySelect) {
+        mainCountrySelect.addEventListener('change', function () {
+            updateCurrencySymbols(this.value);
+        });
+        // Initial set
+        updateCurrencySymbols(mainCountrySelect.value);
+    }
+
+    /* --- HISTORY SEARCH --- */
+    const searchInput = document.querySelector('.search-wrapper input');
+    if (searchInput) {
+        searchInput.addEventListener('keyup', function () {
+            const filter = this.value.toLowerCase();
+            const rows = document.querySelectorAll('#historyTable tbody tr');
+
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(filter) ? '' : 'none';
+            });
+        });
+    }
+
+    /* --- DYNAMIC AI INSIGHTS --- */
+    window.refreshInsights = async function (btn) {
+        const aiBox = btn.closest('.card').querySelector('.ai-box');
+        const content = aiBox.querySelector('#aiInsightText');
+        
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-rotate fa-spin"></i> Analyzing Profile...';
+        aiBox.classList.add('shimmer');
+
+        try {
+            const response = await fetch('/dashboard/profile/insights/');
+            const data = await response.json();
+
+            if (content) {
+                // Restore professional formatting with marked.js but keep it muted/sm
+                content.innerHTML = `
+                    <div class="ai-rendered-content text-sm text-muted fade-in">
+                        ${marked.parse(data.insight)}
+                    </div>
+                `;
+            }
+        } catch (error) {
+            console.error(error);
+            showToast('Failed to load AI insights.', 'error');
+        } finally {
+            aiBox.classList.remove('shimmer');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-bolt"></i> Refresh Insight';
+        }
     }
 
     /* --- TAX CALCULATOR --- */
     const taxForm = document.getElementById('taxCalcForm');
-    const resultsPanel = document.getElementById('resultsPanel');
     const calcBtn = document.getElementById('calcBtn');
 
     if (taxForm) {
         taxForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            
-            // Show Gloabl Loading Overlay (Full-page blur)
             const globalLoading = document.getElementById('globalLoading');
-            if (globalLoading) {
-                globalLoading.style.display = 'flex';
-                globalLoading.classList.add('fade-in');
-            }
-            
-            // Disable button
+            if (globalLoading) globalLoading.style.display = 'flex';
             calcBtn.disabled = true;
-            
+
             const formData = new FormData(taxForm);
             const data = Object.fromEntries(formData.entries());
-            
+
             try {
                 const response = await fetch('/calculate/', {
                     method: 'POST',
@@ -108,20 +224,14 @@ document.addEventListener("DOMContentLoaded", () => {
                     })
                 });
                 
-                if (!response.ok) throw new Error('Calculation failed');
-                
                 const result = await response.json();
-                
-                // Add a small artificial delay for that "impressive" feel
                 setTimeout(() => {
                     if (globalLoading) globalLoading.style.display = 'none';
-                    displayResults(result);
+                    displayResults(result, data.country);
                 }, 800);
-
             } catch (error) {
-                console.error('Error:', error);
                 if (globalLoading) globalLoading.style.display = 'none';
-                alert('Failed to calculate tax. Please check your data and try again.');
+                showToast('Calculation failed. Check your data.', 'error');
             } finally {
                 calcBtn.disabled = false;
             }
@@ -129,16 +239,16 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     /* --- MODAL SYSTEM --- */
-    window.openModal = function(modalId) {
+    window.openModal = function (modalId) {
         const modal = document.getElementById(modalId);
         if (modal) {
             modal.style.display = 'flex';
             setTimeout(() => modal.classList.add('show'), 10);
-            document.body.style.overflow = 'hidden'; // Prevent scroll
+            document.body.style.overflow = 'hidden';
         }
     }
 
-    window.closeModal = function(modalId) {
+    window.closeModal = function (modalId) {
         const modal = document.getElementById(modalId);
         if (modal) {
             modal.classList.remove('show');
@@ -149,124 +259,57 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // Close modal on click outside
-    window.onclick = function(event) {
-        if (event.target.classList.contains('modal-overlay')) {
-            closeModal(event.target.id);
-        }
-    }
-
     /* --- PASSWORD TOOLS --- */
-    window.togglePassword = function(inputId, icon) {
+    window.togglePassword = function (inputId, icon) {
         const input = document.getElementById(inputId);
-        if (input.type === "password") {
-            input.type = "text";
-            icon.classList.remove('fa-eye');
-            icon.classList.add('fa-eye-slash');
-        } else {
-            input.type = "password";
-            icon.classList.remove('fa-eye-slash');
-            icon.classList.add('fa-eye');
-        }
+        input.type = input.type === "password" ? "text" : "password";
+        icon.classList.toggle('fa-eye');
+        icon.classList.toggle('fa-eye-slash');
     }
 
-    window.checkPasswordStrength = function(pass, meterId) {
-        const meter = document.getElementById(meterId);
-        const bar = meter.querySelector('.strength-bar');
+    window.checkPasswordStrength = function (pass, meterId) {
+        const bar = document.getElementById(meterId).querySelector('.strength-bar');
         let strength = 0;
-        
         if (pass.length > 5) strength++;
         if (pass.length > 10) strength++;
         if (/[A-Z]/.test(pass)) strength++;
         if (/[0-9]/.test(pass)) strength++;
         if (/[^A-Za-z0-9]/.test(pass)) strength++;
 
-        bar.className = 'strength-bar';
-        if (strength < 2) {
-            bar.classList.add('weak');
-        } else if (strength < 4) {
-            bar.classList.add('medium');
-        } else {
-            bar.classList.add('strong');
-        }
+        bar.className = 'strength-bar ' + (strength < 2 ? 'weak' : strength < 4 ? 'medium' : 'strong');
     }
-
-    /* --- DYNAMIC INSIGHTS --- */
-    window.refreshInsights = function(btn) {
-        const aiBox = btn.closest('.card').querySelector('.ai-box');
-        const content = aiBox.querySelector('p');
-        
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fa-solid fa-rotate fa-spin"></i> Analyzing...';
-        aiBox.classList.add('shimmer');
-
-        const alternativeInsights = [
-            "We detected unusual deductions in 80C. Re-verify your ELSS statements to ensure maximum compliance.",
-            "Great job on documentation! You're currently utilizing 94% of available local tax exemptions.",
-            "Attention: New regional tax laws are effective next month. Your current estimations might shift by ±2%.",
-            "Tip: Consider shifting your capital gains to the next fiscal year to stay within the lower tax bracket."
-        ];
-
-        setTimeout(() => {
-            const random = alternativeInsights[Math.floor(Math.random() * alternativeInsights.length)];
-            content.innerText = random;
-            aiBox.classList.remove('shimmer');
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fa-solid fa-bolt"></i> Refresh Insight';
-        }, 1200);
-    }
-
-    // Add click animation to all buttons globally
-    document.querySelectorAll('button, .btn-primary, .btn-outline').forEach(btn => {
-        btn.classList.add('btn-click-anim');
-    });
 });
 
-function displayResults(data) {
+function displayResults(data, country) {
     const resultsPanel = document.getElementById('resultsPanel');
     resultsPanel.style.display = 'block';
     resultsPanel.classList.add('fade-in');
-    
-    // Smooth scroll
-    setTimeout(() => {
-        resultsPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 100);
-    
-    // Basic values
-    document.getElementById('resTaxable').textContent = (data.taxable_income || 0).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
-    document.getElementById('resTax').textContent = (data.estimated_tax || 0).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
-    
-    // Build table
+
+    // Currency symbol update
+    const CURRENCY_MAP = { 'india': '₹', 'us': '$', 'uk': '£', 'canada': 'C$', 'australia': 'A$' };
+    const symbol = CURRENCY_MAP[country.toLowerCase()] || '$';
+
+    document.querySelectorAll('.results-currency').forEach(el => el.textContent = symbol);
+    document.getElementById('resTaxable').textContent = (data.taxable_income || 0).toLocaleString();
+    document.getElementById('resTax').textContent = (data.estimated_tax || 0).toLocaleString();
+
     const tableBody = document.querySelector('#slabsTable tbody');
     tableBody.innerHTML = '';
-    
-    if (data.tax_breakdown && data.tax_breakdown.length > 0) {
-        data.tax_breakdown.forEach(slab => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
+    data.tax_breakdown.forEach(slab => {
+        tableBody.innerHTML += `
+            <tr>
                 <td>${slab.lower_limit.toLocaleString()}</td>
                 <td>${slab.upper_limit ? slab.upper_limit.toLocaleString() : 'Above'}</td>
                 <td>${(slab.rate * 100).toFixed(1)}%</td>
-                <td class="text-accent format-number">${slab.tax_for_this_slab.toLocaleString()}</td>
-            `;
-            tableBody.appendChild(row);
-        });
-    } else {
-        const row = document.createElement('tr');
-        row.innerHTML = `<td colspan="4" class="text-center text-muted">No tax slabs hit.</td>`;
-        tableBody.appendChild(row);
-    }
-    
-    // AI Suggestions
+                <td class="text-accent">${symbol}${slab.tax_for_this_slab.toLocaleString()}</td>
+            </tr>
+        `;
+    });
+
     const aiContent = document.getElementById('aiSuggestions');
-    if (data.ai_suggestions && typeof marked !== 'undefined') {
-        aiContent.innerHTML = marked.parse(data.ai_suggestions);
-    } else {
-        aiContent.innerHTML = `<p class="text-muted">No AI suggestions available.</p>`;
-    }
+    if (typeof marked !== 'undefined') aiContent.innerHTML = marked.parse(data.ai_suggestions);
 }
 
-// CSRF util
 function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
