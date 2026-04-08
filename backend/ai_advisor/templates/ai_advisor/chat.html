@@ -1,0 +1,43 @@
+{% extends 'base_app.html' %}
+{% load static %}
+
+{% block title %}AI Chat - AI Tax Assistant{% endblock %}
+{% block page_title %}AI Tax Advisor{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'chat.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="chat-container card" style="height: calc(100vh - 160px); display: flex; flex-direction: column; overflow: hidden; position: relative;">
+    
+    <!-- Top action bar inside chat area -->
+    <div class="card-header flex-between align-center" style="padding: 1rem 1.5rem;">
+        <div>
+            <h3 class="font-weight-bold">Chat with AI</h3>
+            <p class="text-muted text-sm mt-1">Ask any specific tax questions or get advice on your calculation.</p>
+        </div>
+        <button class="btn-outline" id="newChatBtn" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+            <i class="fa-solid fa-plus"></i> New Chat
+        </button>
+    </div>
+
+    <!-- CHAT MESSAGES -->
+    <div class="messages flex-grow-1" id="messages" style="flex: 1; overflow-y: auto; padding: 2rem;"></div>
+
+    <!-- CENTERED INPUT (initially) -->
+    <div class="chat-input centered" id="chatInput" style="border-top: 1px solid var(--border-color); padding: 1.5rem; background: rgba(0,0,0,0.2);">
+        <div style="display: flex; gap: 0.8rem; max-width: 800px; margin: 0 auto; width: 100%;">
+            <input type="text" id="messageInput" placeholder="Ask a tax question... (e.g. Can I deduct home office expenses?)" style="flex: 1; background: #111; border: 1px solid var(--border-color); border-radius: 8px; padding: 0.8rem 1rem; color: white;" />
+            <button class="btn-primary" id="sendBtn" style="white-space: nowrap;">
+                <i class="fa-solid fa-paper-plane"></i> Send
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="{% static 'chat.js' %}"></script>
+{% endblock %}

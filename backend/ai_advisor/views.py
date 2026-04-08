@@ -77,7 +77,7 @@ When a user provides financial details:
             model="openai/gpt-oss-120b",
             messages=messages,
             temperature=0.4,
-            max_completion_tokens=8192,
+            max_completion_tokens=1200,
         )
 
         reply = completion.choices[0].message.content

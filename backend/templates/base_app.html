@@ -1,0 +1,111 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Dashboard - AI Tax Assistant{% endblock %}</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <!-- Shared Styles -->
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+    <link rel="stylesheet" href="{% static 'dashboard.css' %}">
+    
+    {% block extra_head %}{% endblock %}
+</head>
+
+<body class="app-body">
+
+    <!-- GLOBAL LOADING OVERLAY -->
+    <div id="globalLoading" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Processing Analysis...</div>
+    </div>
+
+    <!-- SIDEBAR NAVIGATION -->
+    <aside class="app-sidebar" id="appSidebar">
+        <div class="sidebar-header">
+            <span class="logo">AI Tax Assistant</span>
+            <button class="icon-btn" id="toggleSidebar"><i class="fa-solid fa-bars"></i></button>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="{% url 'dashboard' %}" class="nav-item">
+                <span class="nav-icon"><i class="fa-solid fa-chart-simple"></i></span>
+                <span class="nav-label">Overview</span>
+            </a>
+            <a href="{% url 'calculator' %}" class="nav-item">
+                <span class="nav-icon"><i class="fa-solid fa-calculator"></i></span>
+                <span class="nav-label">Tax Calculator</span>
+            </a>
+            <a href="{% url 'history' %}" class="nav-item">
+                <span class="nav-icon"><i class="fa-solid fa-clock-rotate-left"></i></span>
+                <span class="nav-label">History</span>
+            </a>
+            <a href="{% url 'chat' %}" class="nav-item">
+                <span class="nav-icon"><i class="fa-solid fa-robot"></i></span>
+                <span class="nav-label">AI Chat</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- MAIN CONTENT WRAPPER -->
+    <div class="app-main">
+        
+        <!-- TOPBAR -->
+        <header class="app-topbar">
+            <div class="topbar-left">
+                <h2 class="page-title">{% block page_title %}Dashboard{% endblock %}</h2>
+            </div>
+            
+            <div class="topbar-right">
+                <div class="user-profile-dropdown" id="userProfileDropdown">
+                    <div class="user-profile-trigger" id="dropdownTrigger">
+                        <!-- Modern Avatar with Initials -->
+                        <div class="user-avatar" data-initials="{{ request.user.username|make_list|first|upper }}">
+                            {{ request.user.username|make_list|first|upper }}
+                        </div>
+                        <span class="user-name">{{ request.user.username }}</span>
+                        <i class="fa-solid fa-chevron-down" style="font-size: 0.8rem; margin-left: 5px; color: var(--text-muted);"></i>
+                    </div>
+
+                    <!-- Dropdown Menu -->
+                    <div class="dropdown-menu" id="dropdownMenu">
+                        <div class="dropdown-header">
+                            <strong>{{ request.user.username }}</strong>
+                            <span class="d-block text-muted text-sm">{{ request.user.email }}</span>
+                        </div>
+                        <hr class="nav-divider" style="margin: 0.5rem 0;">
+                        <a href="{% url 'profile' %}" class="dropdown-item"><i class="fa-regular fa-user"></i> Profile</a>
+                        <a href="{% url 'settings' %}" class="dropdown-item"><i class="fa-solid fa-gear"></i> Settings</a>
+                        <hr class="nav-divider" style="margin: 0.5rem 0;">
+                        <a href="{% url 'logout' %}" class="dropdown-item text-danger"><i class="fa-solid fa-arrow-right-from-bracket"></i> Log Out</a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- PAGE CONTENT -->
+        <main class="app-content container-fluid">
+            {% if messages %}
+                <div class="messages-container">
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
+            {% block content %}
+            {% endblock %}
+        </main>
+        
+    </div>
+
+    <!-- Scripts -->
+    <script src="{% static 'dashboard.js' %}"></script>
+    {% block extra_scripts %}{% endblock %}
+
+</body>
+</html>

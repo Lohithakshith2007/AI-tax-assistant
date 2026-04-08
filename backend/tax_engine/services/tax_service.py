@@ -43,6 +43,35 @@ def calculate_tax_by_country(country, taxable_income):
             (95375, 0.22),
             (float("inf"), 0.24),
         ]
+        
+    elif country == "uk":
+        # Approximate UK slabs
+        slabs = [
+            (12570, 0.0),
+            (50270, 0.20),
+            (125140, 0.40),
+            (float("inf"), 0.45),
+        ]
+        
+    elif country == "canada":
+        # Approximate Canada Federal slabs
+        slabs = [
+            (53359, 0.15),
+            (106717, 0.205),
+            (165430, 0.26),
+            (235675, 0.29),
+            (float("inf"), 0.33),
+        ]
+        
+    elif country == "australia":
+        # Approximate Australia slabs
+        slabs = [
+            (18200, 0.0),
+            (45000, 0.19),
+            (120000, 0.325),
+            (180000, 0.37),
+            (float("inf"), 0.45),
+        ]
 
     else:
         raise ValueError("Unsupported country")

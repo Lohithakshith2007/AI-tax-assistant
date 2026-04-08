@@ -1,0 +1,308 @@
+{% extends 'base_app.html' %}
+
+{% block title %}Profile Dashboard - AI Tax Assistant{% endblock %}
+{% block page_title %}Profile Dashboard{% endblock %}
+
+{% block content %}
+<div class="profile-grid-layout">
+
+    <!-- LEFT COLUMN: IDENTITY, PROGRESS, METADATA -->
+    <div class="profile-left-col">
+        <!-- PROFILE BANNER -->
+        <div class="card profile-banner-card card-glow-hover">
+            <div class="profile-banner-bg"></div>
+            <div class="profile-banner-content">
+                <div class="profile-avatar-giant">
+                    {{ request.user.username|make_list|first|upper }}
+                </div>
+                <h3 class="mb-1 font-weight-bold" style="font-size: 1.5rem;">{{ request.user.username }}</h3>
+                <p class="text-muted text-sm mb-3">{{ request.user.email }}</p>
+                <div class="badge badge-info"
+                    style="background: rgba(199,240,0,0.1); border: 1px solid rgba(199,240,0,0.2); color: var(--accent);">
+                    <i class="fa-solid fa-crown" style="margin-right: 5px;"></i> Pro Member since
+                    {{request.user.date_joined|date:"M Y" }}
+                </div>
+            </div>
+        </div>
+
+        <!-- COMPLETION PROGRESS -->
+        <div class="card p-4 card-glow-hover">
+            <div class="flex-between align-center mb-2">
+                <span class="text-sm font-weight-bold">Profile Completion</span>
+                <span class="text-accent text-sm font-weight-bold">{{ completion_percentage }}%</span>
+            </div>
+            <div class="progress-container">
+                <div class="progress-bar" style="width: {{ completion_percentage }}%"></div>
+            </div>
+            {% if missing_fields %}
+            <div class="mt-3">
+                <span class="text-xs text-muted d-block mb-2">Required for 100%:</span>
+                <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 2px;">
+                    {% for field in missing_fields %}
+                    <span class="badge"
+                        style="background: rgba(239, 68, 68, 0.1); color: #ef4444; font-size: 0.65rem; border: 1px solid rgba(239, 68, 68, 0.2);">{{field}}
+                    </span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% else %}
+            <p class="text-accent text-xs mt-2"><i class="fa-solid fa-circle-check"></i> Profile fully complete!</p>
+            {% endif %}
+        </div>
+
+        <!-- SECURITY METADATA -->
+        <div class="card p-4 card-glow-hover">
+            <h4 class="text-xs font-weight-bold text-muted mb-4"
+                style="text-transform: uppercase; letter-spacing: 0.05em;">Session Security</h4>
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                <div class="flex-between">
+                    <span class="text-muted text-sm"><i class="fa-solid fa-desktop mr-2" style="width: 15px;"></i>
+                        Device</span>
+                    <span class="text-sm">{{ device_info }}</span>
+                </div>
+                <div class="flex-between">
+                    <span class="text-muted text-sm"><i class="fa-solid fa-globe mr-2" style="width: 15px;"></i>
+                        Browser</span>
+                    <span class="text-sm">{{ browser_info }}</span>
+                </div>
+                <div class="flex-between">
+                    <span class="text-muted text-sm"><i class="fa-solid fa-shield mr-2" style="width: 15px;"></i> Masked
+                        IP</span>
+                    <span class="text-sm text-muted" style="filter: blur(4px);">{{ session_ip }}</span>
+                </div>
+                <div class="flex-between">
+                    <span class="text-muted text-sm"><i class="fa-solid fa-clock mr-2" style="width: 15px;"></i>
+                        Login</span>
+                    <span class="text-sm">{{ request.user.last_login|date:"M d, H:i" }}</span>
+                </div>
+            </div>
+        </div>
+        <!-- AI INSIGHTS -->
+        <div class="card card-glow-hover">
+            <div class="card-header flex-between">
+                <h3>AI Insights</h3>
+                <button class="btn-outline" style="padding: 0.4rem 0.6rem; font-size: 0.65rem;"
+                    onclick="refreshInsights(this)">
+                    <i class="fa-solid fa-rotate"></i> Refresh
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="ai-box"
+                    style="padding: 1.25rem; border-radius: 12px; background: rgba(199,240,0,0.03); border: 1px solid rgba(199,240,0,0.1);">
+                    <h4 style="font-size: 0.85rem; margin-bottom: 0.75rem;"><i class="fa-solid fa-star text-accent"></i>
+                        Optimization Notice</h4>
+                    <p class="text-sm text-muted" style="line-height: 1.6;">Your recent activity suggests a
+                        deductible surplus. Check if your ELSS statements are fully utilized for this cycle.</p>
+                    <hr class="nav-divider" style="opacity: 0.1; margin: 1rem 0;">
+                    <a href="{% url 'chat' %}" class="text-accent text-xs font-weight-bold"
+                        style="text-decoration: none;">Deep Dive with AI Advisor <i
+                            class="fa-solid fa-arrow-right-long ml-1"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- RIGHT COLUMN: STATS, ACCOUNT, ACTIVITY, INSIGHTS -->
+    <div class="profile-right-col">
+
+        <!-- TOP STAT CARDS (Strict Row) -->
+        <div class="profile-stats-grid">
+            <div class="mini-stat-card card-glow-hover">
+                <span class="mini-stat-label">Your Calculations</span>
+                <div class="flex-between align-center">
+                    <span class="mini-stat-value">{{ total_calculations }}</span>
+                    <i class="fa-solid fa-calculator text-accent" style="font-size: 1rem; opacity: 0.5;"></i>
+                </div>
+                <div class="stat-subtext trend-up">
+                    <i class="fa-solid fa-arrow-up"></i> {{ tax_trend|floatformat:1 }}% <span class="text-muted">vs last window</span>
+                </div>
+            </div>
+            <div class="mini-stat-card card-glow-hover">
+                <span class="mini-stat-label">Total Estimated Tax</span>
+                <div class="flex-between align-center">
+                    <span class="mini-stat-value">${{ total_tax|floatformat:2 }}</span>
+                    <i class="fa-solid fa-sack-dollar text-accent" style="font-size: 1rem; opacity: 0.5;"></i>
+                </div>
+                <div class="stat-subtext trend-neutral">
+                    <i class="fa-solid fa-minus"></i> 0% <span class="text-muted">vs prev period</span>
+                </div>
+            </div>
+            <div class="mini-stat-card card-glow-hover">
+                <span class="mini-stat-label">AI Advisor Usage</span>
+                <div class="flex-between align-center">
+                    <span class="mini-stat-value">{{ total_calculations|add:1 }} sessions</span>
+                    <i class="fa-solid fa-robot text-accent" style="font-size: 1rem; opacity: 0.5;"></i>
+                </div>
+                <div class="stat-subtext trend-up">
+                    <i class="fa-solid fa-bolt"></i> Active <span class="text-muted">Since {{ last_active|timesince }} ago</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- BALANCED ROW: ACTIVITY & INSIGHTS -->
+        <div class="dash-main-row mb-4">
+            <!-- RECENT ACTIVITY -->
+            <div class="card card-glow-hover">
+                <div class="card-header flex-between">
+                    <h3>Recent Activity</h3>
+                    <span class="text-xs text-muted">Last 5 records</span>
+                </div>
+                <div class="card-body p-0">
+                    {% if recent_activity %}
+                    {% for item in recent_activity %}
+                    <div class="activity-item">
+                        <div class="activity-icon"><i class="fa-solid fa-calendar-check"></i></div>
+                        <div class="activity-details">
+                            <span class="d-block text-sm font-weight-bold">{{ item.country|title }} Report
+                                <span class="activity-tag ai">AI Validated</span>
+                            </span>
+                            <span class="text-muted text-xs">{{ item.created_at|timesince }} ago</span>
+                        </div>
+                        <div class="text-accent font-weight-bold text-sm">
+                            ${{ item.estimated_tax|floatformat:2 }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <p class="text-center text-muted p-4">No recent activity found.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- ACCOUNT SECURITY SECTION -->
+        <div class="card card-glow-hover">
+            <div class="card-header flex-between align-center">
+                <div>
+                    <h3>Account & Security</h3>
+                    <p class="text-muted text-xs mt-1">Manage your credentials and identification details.</p>
+                </div>
+                <button onclick="openModal('editProfileModal')" class="btn-primary"
+                    style="padding: 0.5rem 1rem; font-size: 0.8rem;">
+                    <i class="fa-solid fa-user-gear"></i> Edit Profile
+                </button>
+            </div>
+            <div class="card-body">
+
+                <div class="flex-between align-center mb-3">
+                    <div>
+                        <h4 class="font-weight-bold">Password Management</h4>
+                        <p class="text-muted text-xs mt-1">Strengthen your account security with a robust password.</p>
+                    </div>
+                </div>
+
+                <form method="POST" action="{% url 'profile' %}" class="modern-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="update_password">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="old_password">Current Password</label>
+                            <div class="password-wrapper">
+                                <input type="password" id="old_password" name="old_password" required
+                                    placeholder="••••••••">
+                                <i class="fa-solid fa-eye pass-toggle"
+                                    onclick="togglePassword('old_password', this)"></i>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="new_password1">New Password</label>
+                            <div class="password-wrapper">
+                                <input type="password" id="new_password1" name="new_password1" required
+                                    placeholder="New Password"
+                                    oninput="checkPasswordStrength(this.value, 'strengthMeter')">
+                                <i class="fa-solid fa-eye pass-toggle"
+                                    onclick="togglePassword('new_password1', this)"></i>
+                            </div>
+                            <div id="strengthMeter" class="strength-meter">
+                                <div class="strength-bar"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display: flex; justify-content: flex-end;">
+                        <button type="submit" class="btn-outline mt-2"><i class="fa-solid fa-shield-halved"></i> Update
+                            Password</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- QUICK SHORTCUTS -->
+        <div class="card p-4 card-glow-hover">
+            <h3 class="mb-4">Quick Shortcuts</h3>
+            <div class="actions-grid">
+                <a href="{% url 'calculator' %}" class="btn-outline"
+                    style="justify-content: start; padding: 1.25rem; border-radius: 12px; height: auto;">
+                    <i class="fa-solid fa-calculator text-accent" style="font-size: 1.25rem; margin-right: 1rem;"></i>
+                    <div style="text-align: left;">
+                        <strong class="d-block text-sm">New Analysis</strong>
+                        <span class="text-muted text-xs">Run a tax estimation</span>
+                    </div>
+                </a>
+                <a href="{% url 'chat' %}" class="btn-outline"
+                    style="justify-content: start; padding: 1.25rem; border-radius: 12px; height: auto;">
+                    <i class="fa-solid fa-robot text-accent" style="font-size: 1.25rem; margin-right: 1rem;"></i>
+                    <div style="text-align: left;">
+                        <strong class="d-block text-sm">Chat Advisor</strong>
+                        <span class="text-muted text-xs">AI Tax consultations</span>
+                    </div>
+                </a>
+                <a href="{% url 'history' %}" class="btn-outline"
+                    style="justify-content: start; padding: 1.25rem; border-radius: 12px; height: auto;">
+                    <i class="fa-solid fa-folder-open text-accent" style="font-size: 1.25rem; margin-right: 1rem;"></i>
+                    <div style="text-align: left;">
+                        <strong class="d-block text-sm">Past Reports</strong>
+                        <span class="text-muted text-xs">View saved history</span>
+                    </div>
+                </a>
+                <a href="{% url 'settings' %}" class="btn-outline"
+                    style="justify-content: start; padding: 1.25rem; border-radius: 12px; height: auto;">
+                    <i class="fa-solid fa-gear text-accent" style="font-size: 1.25rem; margin-right: 1rem;"></i>
+                    <div style="text-align: left;">
+                        <strong class="d-block text-sm">Settings</strong>
+                        <span class="text-muted text-xs">Manage your account</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- PROFILE EDIT MODAL -->
+<div id="editProfileModal" class="modal-overlay">
+    <div class="modal-content card-glow-hover">
+        <div class="modal-header">
+            <h3>Update Profile Information</h3>
+            <button class="icon-btn" onclick="closeModal('editProfileModal')"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <form method="POST" action="{% url 'profile' %}" class="modern-form">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="update_profile">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="username">Display Username</label>
+                    <input type="text" id="username" name="username" value="{{ request.user.username }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" value="{{ request.user.email }}" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="first_name">First Name</label>
+                    <input type="text" id="first_name" name="first_name" value="{{ request.user.first_name }}" placeholder="Your first name">
+                </div>
+                <div class="form-group">
+                    <label for="last_name">Last Name</label>
+                    <input type="text" id="last_name" name="last_name" value="{{ request.user.last_name }}" placeholder="Your last name">
+                </div>
+            </div>
+            <p class="text-muted text-xs mb-4">Security Note: Any changes to your primary email will require secondary authentication on the next login.</p>
+            <div class="modal-footer">
+                <button type="button" class="btn-outline" onclick="closeModal('editProfileModal')">Cancel</button>
+                <button type="submit" class="btn-primary">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,111 @@
+{% extends 'base_app.html' %}
+
+{% block title %}Settings - AI Tax Assistant{% endblock %}
+{% block page_title %}Account Preferences{% endblock %}
+
+{% block content %}
+<div class="settings-grid fade-in">
+    
+    <!-- CALCULATION PREFERENCES -->
+    <div class="card card-glow-hover settings-card">
+        <div class="card-header">
+            <h4 class="settings-group-title"><i class="fa-solid fa-sliders"></i> Calculation Defaults</h4>
+            <p class="text-muted text-sm">Configure your primary tax jurisdiction and estimation behaviors.</p>
+        </div>
+        <div class="card-body">
+            <form class="modern-form">
+                <div class="form-group">
+                    <label for="default_country"><i class="fa-solid fa-earth-americas"></i> Preferred Tax Jurisdiction</label>
+                    <div class="stylish-select-wrapper">
+                        <select id="default_country" name="default_country">
+                            <option value="india">India (Income Tax Department)</option>
+                            <option value="us" selected>United States (IRS Internal Revenue Service)</option>
+                            <option value="uk">United Kingdom (HMRC Revenue & Customs)</option>
+                            <option value="canada">Canada (CRA Revenue Agency)</option>
+                            <option value="australia">Australia (ATO Taxation Office)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group mt-4">
+                    <label class="flex-between align-center">
+                        <span class="text-sm">Auto-apply latest fiscal amendments</span>
+                        <label class="switch">
+                            <input type="checkbox" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </label>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- NOTIFICATION SYSTEM -->
+    <div class="card card-glow-hover settings-card">
+        <div class="card-header">
+            <h4 class="settings-group-title"><i class="fa-solid fa-bell"></i> Communication Channels</h4>
+            <p class="text-muted text-sm">Control how and when you receive critical tax law alerts.</p>
+        </div>
+        <div class="card-body">
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                <div class="flex-between align-center">
+                    <div>
+                        <strong class="d-block mb-1 text-sm">Critical Tax Law Alerts</strong>
+                        <span class="text-muted text-xs">Get notified immediately when new tax regimes are announced.</span>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="flex-between align-center">
+                    <div>
+                        <strong class="d-block mb-1 text-sm">Weekly Activity Report</strong>
+                        <span class="text-muted text-xs">A comprehensive summary of your weekly tax estimations.</span>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="flex-between align-center">
+                    <div>
+                        <strong class="d-block mb-1 text-sm">AI Training Participation</strong>
+                        <span class="text-muted text-xs">Help improve AI suggestions by sharing anonymized calculation metadata.</span>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECURITY & DANGER ZONE -->
+    <div class="card card-glow-hover settings-card">
+        <div class="card-header">
+            <h4 class="settings-group-title text-danger"><i class="fa-solid fa-shield-halved"></i> Data Privacy & Protection</h4>
+            <p class="text-muted text-sm">Manage your data retention preferences and account lifecycle.</p>
+        </div>
+        <div class="card-body">
+            <div class="danger-zone-container flex-between align-center" style="background: rgba(239, 68, 68, 0.03); border: 1px solid rgba(239, 68, 68, 0.1);">
+                <div style="padding-right: 1.5rem;">
+                    <strong class="d-block mb-1 text-danger">Purge Account Data</strong>
+                    <span class="text-muted text-xs">Permanently delete all tax calculation history and AI chat logs from our servers.</span>
+                </div>
+                <button type="button" class="btn-danger-glow" onclick="confirm('Permanent deletion requested. Proceed?')">
+                    <i class="fa-solid fa-trash-can"></i> Purge Data
+                </button>
+            </div>
+            
+            <div class="mt-4 text-center">
+                <button type="button" class="btn-primary w-100" style="padding: 1rem;" onclick="alert('Configuration updated successfully.')">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Sync & Save Preferences
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

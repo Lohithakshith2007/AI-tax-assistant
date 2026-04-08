@@ -1,0 +1,58 @@
+{% extends 'base_app.html' %}
+
+{% block title %}History - AI Tax Assistant{% endblock %}
+{% block page_title %}Calculation History{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header flex-between align-center">
+        <div>
+            <h3>All Past Calculations</h3>
+            <p class="text-muted text-sm mt-1">A record of your previous tax estimates and AI queries.</p>
+        </div>
+        <div class="history-search" style="position: relative;">
+            <span style="position: absolute; margin: 0.6rem 0 0 0.8rem; color: var(--text-muted);"><i class="fa-solid fa-search"></i></span>
+            <input type="text" id="historySearch" placeholder="Search history..." style="padding-left: 2.2rem; background: #111; color: #fff; border: 1px solid var(--border-color); border-radius: 8px;">
+        </div>
+    </div>
+    <div class="card-body p-0">
+        {% if calculations %}
+        <div class="table-responsive">
+            <table class="table table-hover table-striped">
+                <thead>
+                    <tr>
+                        <th>Date & Time</th>
+                        <th>Country</th>
+                        <th>Gross Income</th>
+                        <th>Deductions</th>
+                        <th>Taxable Income</th>
+                        <th>Estimated Tax</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for calc in calculations %}
+                    <tr>
+                        <td class="text-muted">{{ calc.created_at|date:"M d, Y H:i" }}</td>
+                        <td style="text-transform: capitalize;">
+                            <span class="badge badge-info">{{ calc.country }}</span>
+                        </td>
+                        <td class="format-number">{{ calc.income }}</td>
+                        <td class="format-number">{{ calc.deductions }}</td>
+                        <td class="format-number">{{ calc.taxable_income }}</td>
+                        <td class="text-accent font-weight-bold format-number">{{ calc.estimated_tax }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon"><i class="fa-solid fa-folder-open"></i></div>
+            <h4>No history found</h4>
+            <p class="text-muted">You haven't made any tax calculations yet.</p>
+            <a href="{% url 'dashboard' %}" class="btn-primary mt-3" style="display: inline-flex;">Go to Calculator</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

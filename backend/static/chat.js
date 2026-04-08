@@ -1,6 +1,5 @@
 const sidebar = document.getElementById("sidebar");
 const toggleSidebar = document.getElementById("toggleSidebar");
-
 const messages = document.getElementById("messages");
 const input = document.getElementById("messageInput");
 const sendBtn = document.getElementById("sendBtn");
@@ -17,9 +16,11 @@ let chat = JSON.parse(localStorage.getItem("chat")) || [];
 renderChat();
 
 /* SIDEBAR TOGGLE */
-toggleSidebar.onclick = () => {
-    sidebar.classList.toggle("collapsed");
-};
+if (toggleSidebar && sidebar) {
+    toggleSidebar.onclick = () => {
+        sidebar.classList.toggle("collapsed");
+    };
+}
 
 /* SEND MESSAGE */
 async function sendMessage() {

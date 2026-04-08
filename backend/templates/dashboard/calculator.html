@@ -1,0 +1,113 @@
+{% extends 'base_app.html' %}
+
+{% block title %}Tax Calculator - AI Tax Assistant{% endblock %}
+{% block page_title %}Tax Calculator{% endblock %}
+
+{% block content %}
+<div class="calc-vertical-container">
+
+    <!-- CALCULATOR FORM -->
+    <div class="card">
+        <div class="card-header">
+            <h3>Calculate Your Tax</h3>
+            <p class="text-muted text-sm mt-2">Enter your earnings to instantly estimate your tax burden with AI
+                insights.</p>
+        </div>
+        <div class="card-body">
+            <form id="taxCalcForm" class="modern-form">
+                <div class="form-group">
+                    <label for="country">Country Jurisdiction</label>
+                    <div class="stylish-select-wrapper">
+                        <select id="country" name="country" required>
+                            <option value="india">India</option>
+                            <option value="us">United States</option>
+                            <option value="uk">United Kingdom</option>
+                            <option value="canada">Canada</option>
+                            <option value="australia">Australia</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="income">Annual Income</label>
+                        <input type="number" id="income" name="income" placeholder="e.g. 50000" required min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="deductions">Eligible Deductions</label>
+                        <input type="number" id="deductions" name="deductions" placeholder="e.g. 5000" min="0">
+                    </div>
+                </div>
+
+                <div class="form-group mb-4">
+                    <label for="age">Current Age</label>
+                    <input type="number" id="age" name="age" placeholder="e.g. 30" required min="18">
+                </div>
+
+                <button type="submit" class="btn-primary w-100" id="calcBtn" style="justify-content: center;">
+                    <i class="fa-solid fa-calculator"></i> Calculate & Analyze
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- RESULTS PANEL (Shown vertically after calculation) -->
+    <div class="card" id="resultsPanel" style="display: none;">
+        <div class="card-body p-0">
+
+            <div class="flex-between m-3 p-4"
+                style="background: rgba(255,255,255,0.02); border-radius: 8px; border: 1px solid var(--border-color);">
+                <div>
+                    <span class="text-muted text-sm d-block mb-1 font-weight-bold"
+                        style="text-transform: uppercase;">Taxable Income</span>
+                    <span class="font-weight-bold" style="font-size: 1.5rem; color: var(--text-main);"
+                        id="resTaxable">0</span>
+                </div>
+                <div style="text-align: right;">
+                    <span class="text-accent text-sm d-block mb-1 font-weight-bold"
+                        style="text-transform: uppercase;">Estimated Tax</span>
+                    <span class="font-weight-bold text-accent" style="font-size: 1.5rem;" id="resTax">0</span>
+                </div>
+            </div>
+
+            <div class="table-responsive px-3 mt-4">
+                <h4 class="text-sm font-weight-bold text-muted mb-3" style="text-transform: uppercase;">Tax Slab
+                    Breakdown</h4>
+                <table class="table" id="slabsTable">
+                    <thead>
+                        <tr>
+                            <th>From</th>
+                            <th>To</th>
+                            <th>Rate</th>
+                            <th>Tax</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- AI Suggestions -->
+            <div class="ai-box m-3 mt-4">
+                <h4><span class="ai-dot"></span> AI Advisor Suggestions</h4>
+                <div id="aiSuggestions" class="ai-content mb-4">
+                    <!-- Markdown rendered here -->
+                </div>
+
+                <hr class="nav-divider" style="margin: 1.5rem 0;">
+
+                <div class="text-center">
+                    <p class="text-muted text-sm mb-3">Want more specific advice based on this breakdown?</p>
+                    <a href="{% url 'chat' %}" class="btn-outline"><i class="fa-solid fa-robot"></i> Know More in
+                        Chat</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Add marked.js for markdown rendering -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+{% endblock %}
