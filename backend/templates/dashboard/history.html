@@ -1,5 +1,5 @@
 {% extends 'base_app.html' %}
-{% load tax_tags %}
+{% load tax_tags humanize %}
 
 {% block title %}History - AI Tax Assistant{% endblock %}
 {% block page_title %}Calculation History{% endblock %}
@@ -23,7 +23,7 @@
                 <thead>
                     <tr>
                         <th>Date & Time</th>
-                        <th>Country</th>
+                        <th>Jurisdiction</th>
                         <th>Gross Income</th>
                         <th>Deductions</th>
                         <th>Taxable Income</th>
@@ -34,14 +34,14 @@
                     {% for calc in calculations %}
                     <tr>
                         <td class="text-muted text-sm">{{ calc.created_at|date:"M d, Y H:i" }}</td>
-                        <td style="text-transform: capitalize;">
+                        <td>
                             <span class="badge" style="background: rgba(199,240,0,0.1); color: var(--accent-neon); border: 1px solid rgba(199,240,0,0.2);">{{ calc.country|country_display }}</span>
                         </td>
-                        <td class="text-sm">{{ calc.country|currency_symbol }}<span class="format-number">{{ calc.income }}</span></td>
-                        <td class="text-sm">{{ calc.country|currency_symbol }}<span class="format-number">{{ calc.deductions }}</span></td>
-                        <td class="text-sm">{{ calc.country|currency_symbol }}<span class="format-number">{{ calc.taxable_income }}</span></td>
+                        <td class="text-sm">{{ calc.country|currency_symbol }}{{ calc.income|floatformat:0|intcomma }}</td>
+                        <td class="text-sm">{{ calc.country|currency_symbol }}{{ calc.deductions|floatformat:0|intcomma }}</td>
+                        <td class="text-sm">{{ calc.country|currency_symbol }}{{ calc.taxable_income|floatformat:0|intcomma }}</td>
                         <td class="text-accent font-weight-bold">
-                            {{ calc.country|currency_symbol }}<span class="format-number">{{ calc.estimated_tax }}</span>
+                            {{ calc.country|currency_symbol }}{{ calc.estimated_tax|floatformat:0|intcomma }}
                         </td>
                     </tr>
                     {% endfor %}

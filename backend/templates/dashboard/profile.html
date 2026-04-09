@@ -1,5 +1,5 @@
 {% extends 'base_app.html' %}
-{% load tax_tags %}
+{% load tax_tags humanize %}
 
 {% block title %}Profile Dashboard - AI Tax Assistant{% endblock %}
 {% block page_title %}Profile Dashboard{% endblock %}
@@ -7,8 +7,9 @@
 {% block content %}
 <div class="profile-grid-layout">
 
-    <!-- LEFT COLUMN: IDENTITY, PROGRESS, METADATA -->
+    <!-- LEFT COLUMN -->
     <div class="profile-left-col">
+
         <!-- PROFILE BANNER -->
         <div class="card profile-banner-card card-glow-hover">
             <div class="profile-banner-bg"></div>
@@ -21,7 +22,7 @@
                 <div class="badge badge-info"
                     style="background: rgba(199,240,0,0.1); border: 1px solid rgba(199,240,0,0.2); color: var(--accent-neon);">
                     <i class="fa-solid fa-crown" style="margin-right: 5px;"></i> Pro Member since
-                    {{request.user.date_joined|date:"M Y" }}
+                    {{ request.user.date_joined|date:"M Y" }}
                 </div>
             </div>
         </div>
@@ -41,8 +42,7 @@
                 <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 2px;">
                     {% for field in missing_fields %}
                     <span class="badge"
-                        style="background: rgba(239, 68, 68, 0.1); color: #ef4444; font-size: 0.65rem; border: 1px solid rgba(239, 68, 68, 0.2);">{{field}}
-                    </span>
+                        style="background: rgba(239,68,68,0.1); color: #ef4444; font-size: 0.65rem; border: 1px solid rgba(239,68,68,0.2);">{{ field }}</span>
                     {% endfor %}
                 </div>
             </div>
@@ -64,7 +64,10 @@
                 <div class="ai-box" style="padding: 1.25rem; border-radius: 12px; background: rgba(199,240,0,0.02); border: 1px solid rgba(199,240,0,0.1); min-height: 250px;">
                     <h4 style="font-size: 0.85rem; margin-bottom: 0.75rem;"><i class="fa-solid fa-star text-accent"></i> Optimization Notice</h4>
                     <div id="aiInsightText">
-                        <p class="text-sm text-muted" style="line-height: 1.6;">Welcome back! Complete more calculations to unlock deeper AI insights. Currently, our engine recommends reviewing regional deduction ceilings for the 2024-25 fiscal window.</p>
+                        <!-- Loaded dynamically on page load -->
+                        <p class="text-sm text-muted" style="line-height: 1.6;">
+                            <i class="fa-solid fa-rotate fa-spin" style="margin-right: 6px;"></i> Loading your personalized AI insight...
+                        </p>
                     </div>
                     <hr class="nav-divider" style="opacity: 0.1; margin: 1.5rem 0;">
                     <p class="text-muted text-xs mb-3">Dynamic AI Advisor is ready to analyze your latest data.</p>
@@ -72,9 +75,10 @@
                 </div>
             </div>
         </div>
+
     </div>
 
-    <!-- RIGHT COLUMN: STATS, ACCOUNT, ACTIVITY -->
+    <!-- RIGHT COLUMN -->
     <div class="profile-right-col">
 
         <!-- TOP STAT CARDS -->
@@ -89,16 +93,25 @@
                     <i class="fa-solid fa-arrow-up"></i> {{ tax_trend|floatformat:1 }}% <span class="text-muted">vs last window</span>
                 </div>
             </div>
+
             <div class="mini-stat-card card-glow-hover">
                 <span class="mini-stat-label">Estimated Tax (Base)</span>
                 <div class="flex-between align-center">
-                    <span class="mini-stat-value">{% if calculations.first %}{{ calculations.first.country|currency_symbol }}{% else %}{{ preferred_country|currency_symbol }}{% endif %}{{ total_tax|floatformat:2 }}</span>
+                    <span class="mini-stat-value">
+                        {% if calculations.first %}
+                            {{ calculations.first.country|currency_symbol }}
+                        {% else %}
+                            {{ preferred_country|currency_symbol }}
+                        {% endif %}
+                        {{ total_tax|floatformat:0|intcomma }}
+                    </span>
                     <i class="fa-solid fa-sack-dollar text-accent" style="font-size: 1rem; opacity: 0.5;"></i>
                 </div>
                 <div class="stat-subtext trend-neutral">
-                    <i class="fa-solid fa-minus"></i> Active Analysis
+                    <i class="fa-solid fa-minus"></i> {{ active_country|country_display }}
                 </div>
             </div>
+
             <div class="mini-stat-card card-glow-hover">
                 <span class="mini-stat-label">Last Active</span>
                 <div class="flex-between align-center">
@@ -129,7 +142,7 @@
                         <span class="text-muted text-xs">{{ item.created_at|timesince }} ago</span>
                     </div>
                     <div class="text-accent font-weight-bold text-sm">
-                        {{ item.country|currency_symbol }}{{ item.estimated_tax|floatformat:2 }}
+                        {{ item.country|currency_symbol }}{{ item.estimated_tax|floatformat:0|intcomma }}
                     </div>
                 </div>
                 {% endfor %}
@@ -139,7 +152,7 @@
             </div>
         </div>
 
-        <!-- ACCOUNT SECURITY SECTION -->
+        <!-- ACCOUNT SECURITY -->
         <div class="card card-glow-hover">
             <div class="card-header flex-between align-center">
                 <div>
@@ -203,6 +216,7 @@
                 </a>
             </div>
         </div>
+
     </div>
 </div>
 
@@ -216,7 +230,7 @@
         <form method="POST" action="{% url 'profile' %}" class="modern-form">
             {% csrf_token %}
             <input type="hidden" name="action" value="update_profile">
-            
+
             <div class="form-row">
                 <div class="form-group">
                     <label>Username</label>
@@ -242,16 +256,16 @@
             <div class="form-row">
                 <div class="form-group">
                     <label>Phone Number</label>
-                    <input type="text" name="phone" value="{{ request.user.profile.phone_number }}" placeholder="+1 (555) 000-0000">
+                    <input type="text" name="phone" value="{{ request.user.profile.phone_number }}" placeholder="+91 98765 43210">
                 </div>
                 <div class="form-group">
                     <label>Preferred Jurisdiction</label>
                     <select name="preferred_country" class="no-custom">
-                        <option value="india" {% if request.user.profile.preferred_country == 'india' %}selected{% endif %}>India (Income Tax Department)</option>
-                        <option value="us" {% if request.user.profile.preferred_country == 'us' %}selected{% endif %}>United States (IRS)</option>
-                        <option value="uk" {% if request.user.profile.preferred_country == 'uk' %}selected{% endif %}>United Kingdom (HMRC)</option>
-                        <option value="canada" {% if request.user.profile.preferred_country == 'canada' %}selected{% endif %}>Canada (CRA)</option>
-                        <option value="australia" {% if request.user.profile.preferred_country == 'australia' %}selected{% endif %}>Australia (ATO)</option>
+                        <option value="india" {% if preferred_country == 'india' %}selected{% endif %}>India (Income Tax Department)</option>
+                        <option value="us" {% if preferred_country == 'us' %}selected{% endif %}>United States (IRS)</option>
+                        <option value="uk" {% if preferred_country == 'uk' %}selected{% endif %}>United Kingdom (HMRC)</option>
+                        <option value="canada" {% if preferred_country == 'canada' %}selected{% endif %}>Canada (CRA)</option>
+                        <option value="australia" {% if preferred_country == 'australia' %}selected{% endif %}>Australia (ATO)</option>
                     </select>
                 </div>
             </div>
@@ -274,4 +288,14 @@
         </form>
     </div>
 </div>
+
+<!-- Auto-load AI insights on page open -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const insightBtn = document.querySelector('[onclick="refreshInsights(this)"]');
+    if (insightBtn) {
+        refreshInsights(insightBtn);
+    }
+});
+</script>
 {% endblock %}

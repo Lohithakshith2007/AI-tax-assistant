@@ -122,7 +122,12 @@ def profile_view(request):
     device = "Windows Desktop" if "Windows" in user_agent else "Mobile Device"
     browser = "Chrome" if "Chrome" in user_agent else "Default Browser"
 
+    # Determine current active currency from latest calculation or preferred country
+    latest_calc = calculations.first()
+    active_country = latest_calc.country if latest_calc else profile.preferred_country
+
     context = {
+        'calculations': calculations,  # Full queryset for template checks
         'total_calculations': calculations.count(),
         'total_tax': round(total_tax, 2),
         'last_active': last_active_display,
@@ -133,7 +138,8 @@ def profile_view(request):
         'device_info': device,
         'browser_info': browser,
         'session_ip': request.META.get('REMOTE_ADDR', '127.0.0.1'),
-        'preferred_country': profile.preferred_country
+        'preferred_country': profile.preferred_country,
+        'active_country': active_country,
     }
 
     return render(request, 'dashboard/profile.html', context)
@@ -161,11 +167,11 @@ def profile_insights_api(request):
     Profile: {user.first_name} {user.last_name}
     History: {history_str if history_str else "No calculation history yet."}
     
-    TASK: Provide a comprehensive, simle and short 'Optimization Notice' and 'Deep Dive' suggestion.
+    TASK: Provide a comprehensive, simle and short suggestion to optimize the profile along with a deep dive suggestion.
     Focus on tax saving strategies, compliance, and wealth growth.
     Make it feel professional, insightful, and specifically tailored. 
     Wrap your response in a structured format with an 'Optimization Notice' and detail.
-    Aim for about 10-20 words to ensure it fills the dashboard card effectively.
+    Aim for about 6-8 lines to ensure it fills the dashboard card effectively.
     """
 
     try:
@@ -174,7 +180,7 @@ def profile_insights_api(request):
             messages=[{"role": "system", "content": "You are a senior AI Tax Consultant."},
                       {"role": "user", "content": prompt}],
             temperature=0.6,
-            max_tokens=800
+            max_tokens=800,
         )
         insight = completion.choices[0].message.content
         return JsonResponse({"insight": insight})

@@ -71,13 +71,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /* --- CURRENCY MAPPING & DYNAMIC SYMBOLS --- */
     const CURRENCY_MAP = {
-        'india': '₹',
-        'us': '$',
-        'usa': '$',
-        'usd': '$',
-        'uk': '£',
-        'canada': 'C$',
-        'australia': 'A$'
+        'india': '₹', 'in': '₹', 'inr': '₹',
+        'us': '$', 'usa': '$', 'usd': '$',
+        'uk': '£', 'gbp': '£',
+        'canada': 'C$', 'cad': 'C$',
+        'australia': 'A$', 'aud': 'A$',
+        'europe': '€', 'eu': '€', 'eur': '€'
     };
 
     function updateCurrencySymbols(country) {
@@ -286,8 +285,15 @@ function displayResults(data, country) {
     resultsPanel.classList.add('fade-in');
 
     // Currency symbol update
-    const CURRENCY_MAP = { 'india': '₹', 'us': '$', 'uk': '£', 'canada': 'C$', 'australia': 'A$' };
-    const symbol = CURRENCY_MAP[country.toLowerCase()] || '$';
+    const CURRENCY_MAP = {
+        'india': '₹', 'in': '₹', 'inr': '₹',
+        'us': '$', 'usa': '$', 'usd': '$',
+        'uk': '£', 'gbp': '£',
+        'canada': 'C$', 'cad': 'C$',
+        'australia': 'A$', 'aud': 'A$',
+        'europe': '€', 'eu': '€', 'eur': '€'
+    };
+    const symbol = CURRENCY_MAP[country.toLowerCase()] || '₹';
 
     document.querySelectorAll('.results-currency').forEach(el => el.textContent = symbol);
     document.getElementById('resTaxable').textContent = (data.taxable_income || 0).toLocaleString();
@@ -306,8 +312,13 @@ function displayResults(data, country) {
         `;
     });
 
+    // Render AI suggestions with proper formatting
     const aiContent = document.getElementById('aiSuggestions');
-    if (typeof marked !== 'undefined') aiContent.innerHTML = marked.parse(data.ai_suggestions);
+    if (typeof marked !== 'undefined') {
+        aiContent.innerHTML = `<div class="ai-rendered-content">${marked.parse(data.ai_suggestions)}</div>`;
+    } else {
+        aiContent.innerHTML = `<p class="text-sm text-muted">${data.ai_suggestions}</p>`;
+    }
 }
 
 function getCookie(name) {

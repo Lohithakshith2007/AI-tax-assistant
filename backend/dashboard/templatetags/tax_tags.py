@@ -4,34 +4,62 @@ register = template.Library()
 
 @register.filter
 def currency_symbol(country_name):
+    """Returns the currency symbol for a given country identifier."""
     if not country_name:
-        return "$"
+        return "₹"  # Default to INR as per user preference
         
-    country = country_name.lower().strip()
+    country = str(country_name).lower().strip()
     
     mapping = {
         'india': '₹',
+        'in': '₹',
+        'inr': '₹',
         'us': '$',
         'usa': '$',
         'usd': '$',
         'united states': '$',
         'uk': '£',
+        'gbp': '£',
         'united kingdom': '£',
+        'gb': '£',
         'canada': 'C$',
+        'cad': 'C$',
+        'ca': 'C$',
         'australia': 'A$',
+        'aud': 'A$',
+        'au': 'A$',
+        'europe': '€',
+        'eu': '€',
+        'euro': '€',
+        'eur': '€',
     }
     
-    return mapping.get(country, "$")
+    return mapping.get(country, '₹')  # Default fallback to INR
+
 
 @register.filter
 def country_display(value):
+    """Returns a human-readable country name from a country identifier."""
+    if not value:
+        return "India"
     mapping = {
-        "india": "India",
-        "us": "United States",
-        "usa": "United States",
-        "usd": "United States",
-        "uk": "United Kingdom",
-        "canada": "Canada",
-        "australia": "Australia",
+        'india': 'India',
+        'in': 'India',
+        'inr': 'India',
+        'us': 'United States',
+        'usa': 'United States',
+        'usd': 'United States',
+        'united states': 'United States',
+        'uk': 'United Kingdom',
+        'gbp': 'United Kingdom',
+        'united kingdom': 'United Kingdom',
+        'canada': 'Canada',
+        'cad': 'Canada',
+        'australia': 'Australia',
+        'aud': 'Australia',
+        'europe': 'European Union',
+        'eu': 'European Union',
+        'eur': 'European Union',
+        'euro': 'European Union',
     }
-    return mapping.get(value.lower().strip(), value.title())
+    return mapping.get(str(value).lower().strip(), str(value).title())

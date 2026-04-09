@@ -1,5 +1,5 @@
 {% extends 'base_app.html' %}
-{% load tax_tags %}
+{% load tax_tags humanize %}
 
 {% block title %}Overview - AI Tax Assistant{% endblock %}
 {% block page_title %}Overview{% endblock %}
@@ -13,14 +13,14 @@
             <div class="stat-icon"><i class="fa-solid fa-file-invoice" style="color:var(--accent-neon);"></i></div>
             <div class="stat-info">
                 <span class="stat-label">Calculations</span>
-                <span class="stat-value format-number">{{ total_calculations }}</span>
+                <span class="stat-value">{{ total_calculations }}</span>
             </div>
         </div>
         <div class="stat-card">
             <div class="stat-icon"><i class="fa-solid fa-coins" style="color:var(--accent-neon);"></i></div>
             <div class="stat-info">
                 <span class="stat-label">Total Tax Est.</span>
-                <span class="stat-value">{{ last_country|currency_symbol }}<span class="format-number">{{ total_tax_paid }}</span></span>
+                <span class="stat-value">{{ last_country|currency_symbol }}{{ total_tax_paid|floatformat:0|intcomma }}</span>
             </div>
         </div>
         <div class="stat-card">
@@ -63,7 +63,7 @@
                     <thead>
                         <tr>
                             <th>Date</th>
-                            <th>Country</th>
+                            <th>Jurisdiction</th>
                             <th>Gross Income</th>
                             <th>Tax Liability</th>
                         </tr>
@@ -72,12 +72,12 @@
                         {% for calc in calculations %}
                         <tr>
                             <td class="text-muted text-sm">{{ calc.created_at|date:"M d, Y" }}</td>
-                            <td style="text-transform: capitalize;">
-                                <span class="badge" style="background: rgba(199,240,0,0.05); border: 1px solid rgba(199,240,0,0.1); color: var(--accent-neon);">{{ calc.country }}</span>
+                            <td>
+                                <span class="badge" style="background: rgba(199,240,0,0.05); border: 1px solid rgba(199,240,0,0.1); color: var(--accent-neon);">{{ calc.country|country_display }}</span>
                             </td>
-                            <td class="text-sm">{{ calc.country|currency_symbol }}<span class="format-number">{{ calc.income }}</span></td>
+                            <td class="text-sm">{{ calc.country|currency_symbol }}{{ calc.income|floatformat:0|intcomma }}</td>
                             <td class="text-accent font-weight-bold">
-                                {{ calc.country|currency_symbol }}<span class="format-number">{{ calc.estimated_tax }}</span>
+                                {{ calc.country|currency_symbol }}{{ calc.estimated_tax|floatformat:0|intcomma }}
                             </td>
                         </tr>
                         {% endfor %}
