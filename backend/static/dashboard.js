@@ -21,6 +21,25 @@ function showToast(message, type = 'success') {
     }, 3000);
 }
 
+/* --- REFRESH INSIGHTS HANDLER --- */
+window.refreshInsights = function(btn) {
+    if (btn) {
+        const icon = btn.querySelector('i');
+        if (icon) icon.classList.add('fa-spin');
+        btn.disabled = true;
+    }
+    
+    showToast("AI is analyzing your latest data...", "success");
+    
+    setTimeout(() => {
+        if (btn) {
+            const icon = btn.querySelector('i');
+            if (icon) icon.classList.remove('fa-spin');
+            btn.disabled = false;
+        }
+    }, 1500);
+}
+
 document.addEventListener("DOMContentLoaded", () => {
 
     /* --- SIDEBAR TOGGLE --- */

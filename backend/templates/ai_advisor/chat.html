@@ -1,47 +1,193 @@
+{% extends 'base_app.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
 
-<head>
-    <meta charset="UTF-8" />
-    <title>AI Tax Assistant</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="{% static 'style.css' %}">
-    <link rel="stylesheet" href="{% static 'chat.css' %}">
-</head>
+{% block title %}AI Advisor - AI Tax Assistant{% endblock %}
+{% block page_title %}AI Tax Advisor{% endblock %}
 
-<body>
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'chat.css' %}">
+<style>
+    /* Inline additions for Gemini layout */
+    .chat-workspace {
+        display: flex;
+        height: calc(100vh - 120px);
+        margin: -1rem; /* counteract page padding */
+        overflow: hidden;
+    }
 
-    <div class="app">
+    .chat-sidebar {
+        width: 280px;
+        background: rgba(0, 0, 0, 0.2);
+        border-right: 1px solid var(--border-color);
+        display: flex;
+        flex-direction: column;
+        transition: transform 0.3s ease;
+    }
 
-        <!-- SIDEBAR -->
-        <aside class="sidebar" id="sidebar">
-            <div class="sidebar-top">
-                <span class="logo"> AI Tax Assistant</span>
-                <button class="icon-btn" id="toggleSidebar">☰</button>
+    .chat-main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        background: radial-gradient(circle at center, rgba(199, 240, 0, 0.03) 0%, transparent 70%);
+    }
+
+    .messages-container {
+        flex: 1;
+        overflow-y: auto;
+        padding: 2rem 4rem;
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+    }
+
+    /* Landing screen state */
+    .landing-screen {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 2rem;
+    }
+
+    .gemini-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 2rem;
+        background: linear-gradient(90deg, #fff 0%, var(--accent-neon) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .suggestion-pills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.8rem;
+        justify-content: center;
+        max-width: 700px;
+    }
+
+    .pill {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--border-color);
+        padding: 0.75rem 1.25rem;
+        border-radius: 100px;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .pill:hover {
+        background: rgba(199, 240, 0, 0.1);
+        border-color: var(--accent-neon);
+        transform: translateY(-2px);
+    }
+
+    .chat-input-area {
+        padding: 2rem 4rem;
+        width: 100%;
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .premium-input-wrapper {
+        background: rgba(20, 20, 20, 0.8);
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        padding: 0.75rem 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        transition: border-color 0.3s ease;
+    }
+
+    .premium-input-wrapper:focus-within {
+        border-color: var(--accent-neon);
+    }
+
+    .premium-input-wrapper input {
+        flex: 1;
+        background: transparent;
+        border: none;
+        color: white;
+        font-size: 1rem;
+        outline: none;
+    }
+
+    .history-item {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+        cursor: pointer;
+        transition: background 0.2s;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .history-item:hover {
+        background: rgba(199,240,0,0.05);
+    }
+
+    .history-item.active {
+        background: rgba(199,240,0,0.1);
+        border-left: 3px solid var(--accent-neon);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="chat-workspace" style="display: flex; height: calc(100vh - 120px); overflow: hidden;">
+    <!-- MAIN WORKSPACE -->
+    <div class="chat-main" id="chatMain" style="flex: 1; display: flex; flex-direction: column; position: relative;">
+        <!-- Branding Header -->
+        <div class="chat-branding-header">
+            <div class="status-dot"></div>
+            AI Tax Assistant
+        </div>
+
+        <!-- Messages Area -->
+        <div class="messages-container" id="messages" style="display: none;"></div>
+
+        <!-- Landing State -->
+        <div class="landing-screen" id="landingScreen">
+            <h1 class="gemini-title">Hi {{ request.user.username }},<br>Where should we start?</h1>
+            <div class="suggestion-pills">
+                <div class="pill" onclick="fillInput('Optimize my tax for 2024')"><i class="fa-solid fa-receipt text-accent"></i> Optimize my tax for 2024</div>
+                <div class="pill" onclick="fillInput('Deduction suggestions for remote work')"><i class="fa-solid fa-laptop-house text-accent"></i> Remote work deductions</div>
+                <div class="pill" onclick="fillInput('How can I save GST on business expenses?')"><i class="fa-solid fa-building-columns text-accent"></i> GST Saving Tips</div>
+                <div class="pill" onclick="fillInput('Explain capital gains tax simply')"><i class="fa-solid fa-chart-line text-accent"></i> Capital Gains help</div>
             </div>
+        </div>
 
-            <a class="btn-primary-newchat new-chat" id="newChatBtn">+ New Chat</a>
+        <!-- Tagline Footer -->
+        <div class="chat-footer-tagline">
+            Real-time AI explanations • Built for learning
+        </div>
 
-            <div class="chat-history" id="chatHistory"></div>
-        </aside>
-
-        <!-- CHAT AREA -->
-        <main class="chat-area" id="chatArea">
-
-            <!-- CHAT MESSAGES -->
-            <div class="messages" id="messages"></div>
-
-            <!-- CENTERED INPUT (initially) -->
-            <div class="chat-input centered" id="chatInput">
-                <input type="text" id="messageInput" placeholder="How can I help you today?" />
-                <button class="btn-primary" id="sendBtn">Send</button>
+        <!-- Input Area (Persistent at bottom) -->
+        <div class="chat-input-area">
+            <div class="premium-input-wrapper">
+                <i class="fa-solid fa-plus text-muted" style="cursor: pointer;"></i>
+                <input type="text" id="messageInput" placeholder="Ask AI Tax Advisor...">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <span class="text-xs text-muted font-weight-bold" style="background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px;">FAST</span>
+                    <button id="sendBtn" style="background: transparent; border: none; color: var(--accent-neon); cursor: pointer; font-size: 1.2rem;">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </div>
             </div>
-
-        </main>
+        </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="{% static 'chat.js' %}"></script>
-</body>
+</div>
+{% endblock %}
 
-</html>
+{% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="{% static 'chat.js' %}"></script>
+{% endblock %}

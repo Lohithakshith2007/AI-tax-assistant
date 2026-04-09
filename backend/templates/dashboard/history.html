@@ -5,11 +5,12 @@
 {% block page_title %}Calculation History{% endblock %}
 
 {% block content %}
-<div class="card">
+<div class="history-card">
     <div class="card-header flex-between align-center">
         <div>
             <h3>All Past Calculations</h3>
-            <p class="text-muted text-sm mt-1">A permanent record of your previous tax estimates and advisor queries.</p>
+            <p class="text-muted text-sm mt-1">A permanent record of your previous tax estimates and advisor queries.
+            </p>
         </div>
         <div class="search-wrapper">
             <i class="fa-solid fa-search"></i>
@@ -35,11 +36,20 @@
                     <tr>
                         <td class="text-muted text-sm">{{ calc.created_at|date:"M d, Y H:i" }}</td>
                         <td>
-                            <span class="badge" style="background: rgba(199,240,0,0.1); color: var(--accent-neon); border: 1px solid rgba(199,240,0,0.2);">{{ calc.country|country_display }}</span>
+                            <span class="badge"
+                                style="background: rgba(199,240,0,0.1); color: var(--accent-neon); border: 1px solid rgba(199,240,0,0.2);">
+                                {{ calc.country|country_display }}
+                            </span>
                         </td>
-                        <td class="text-sm">{{ calc.country|currency_symbol }}{{ calc.income|floatformat:0|intcomma }}</td>
-                        <td class="text-sm">{{ calc.country|currency_symbol }}{{ calc.deductions|floatformat:0|intcomma }}</td>
-                        <td class="text-sm">{{ calc.country|currency_symbol }}{{ calc.taxable_income|floatformat:0|intcomma }}</td>
+                        <td class="text-sm">
+                            {{ calc.country|currency_symbol }}{{ calc.income|floatformat:0|intcomma }}
+                        </td>
+                        <td class="text-sm">
+                            {{ calc.country|currency_symbol }}{{ calc.deductions|floatformat:0|intcomma }}
+                        </td>
+                        <td class="text-sm">
+                            {{ calc.country|currency_symbol }}{{ calc.taxable_income|floatformat:0|intcomma }}
+                        </td>
                         <td class="text-accent font-weight-bold">
                             {{ calc.country|currency_symbol }}{{ calc.estimated_tax|floatformat:0|intcomma }}
                         </td>
@@ -50,7 +60,8 @@
         </div>
         {% else %}
         <div class="empty-state p-5 text-center">
-            <div class="empty-icon text-muted mb-3" style="font-size: 3rem;"><i class="fa-solid fa-folder-open"></i></div>
+            <div class="empty-icon text-muted mb-3" style="font-size: 3rem;"><i class="fa-solid fa-folder-open"></i>
+            </div>
             <h4>No history found</h4>
             <p class="text-muted">You haven't made any tax calculations yet.</p>
             <a href="{% url 'calculator' %}" class="btn-primary mt-3" style="display: inline-flex;">Go to Calculator</a>

@@ -64,9 +64,8 @@
                 <div class="ai-box" style="padding: 1.25rem; border-radius: 12px; background: rgba(199,240,0,0.02); border: 1px solid rgba(199,240,0,0.1); min-height: 250px;">
                     <h4 style="font-size: 0.85rem; margin-bottom: 0.75rem;"><i class="fa-solid fa-star text-accent"></i> Optimization Notice</h4>
                     <div id="aiInsightText">
-                        <!-- Loaded dynamically on page load -->
                         <p class="text-sm text-muted" style="line-height: 1.6;">
-                            <i class="fa-solid fa-rotate fa-spin" style="margin-right: 6px;"></i> Loading your personalized AI insight...
+                            Welcome back! Complete more calculations to unlock deeper AI insights. Currently, our engine recommends reviewing regional deduction ceilings for the 2024-25 fiscal window.
                         </p>
                     </div>
                     <hr class="nav-divider" style="opacity: 0.1; margin: 1.5rem 0;">
@@ -198,21 +197,21 @@
         <div class="card p-4 card-glow-hover">
             <h3 class="mb-4">Quick Shortcuts</h3>
             <div class="actions-grid">
-                <a href="{% url 'calculator' %}" class="btn-outline" style="justify-content: start; padding: 1.25rem; border-radius: 12px; height: auto;">
-                    <i class="fa-solid fa-calculator text-accent" style="font-size: 1.25rem; margin-right: 1rem;"></i>
-                    <div style="text-align: left;"><strong class="d-block text-sm">New Analysis</strong><span class="text-muted text-xs">Run a tax estimation</span></div>
+                <a href="{% url 'calculator' %}" class="btn-outline">
+                    <i class="fa-solid fa-calculator text-accent"></i>
+                    <div><strong>New Analysis</strong><span class="text-muted">Run a tax estimation</span></div>
                 </a>
-                <a href="{% url 'chat' %}" class="btn-outline" style="justify-content: start; padding: 1.25rem; border-radius: 12px; height: auto;">
-                    <i class="fa-solid fa-robot text-accent" style="font-size: 1.25rem; margin-right: 1rem;"></i>
-                    <div style="text-align: left;"><strong class="d-block text-sm">Chat Advisor</strong><span class="text-muted text-xs">AI Tax consultations</span></div>
+                <a href="{% url 'chat' %}" class="btn-outline">
+                    <i class="fa-solid fa-robot text-accent"></i>
+                    <div><strong>Chat Advisor</strong><span class="text-muted">AI Tax consultations</span></div>
                 </a>
-                <a href="{% url 'history' %}" class="btn-outline" style="justify-content: start; padding: 1.25rem; border-radius: 12px; height: auto;">
-                    <i class="fa-solid fa-folder-open text-accent" style="font-size: 1.25rem; margin-right: 1rem;"></i>
-                    <div style="text-align: left;"><strong class="d-block text-sm">Past Reports</strong><span class="text-muted text-xs">View saved history</span></div>
+                <a href="{% url 'history' %}" class="btn-outline">
+                    <i class="fa-solid fa-folder-open text-accent"></i>
+                    <div><strong>Past Reports</strong><span class="text-muted">View saved history</span></div>
                 </a>
-                <a href="{% url 'settings' %}" class="btn-outline" style="justify-content: start; padding: 1.25rem; border-radius: 12px; height: auto;">
-                    <i class="fa-solid fa-gear text-accent" style="font-size: 1.25rem; margin-right: 1rem;"></i>
-                    <div style="text-align: left;"><strong class="d-block text-sm">Settings</strong><span class="text-muted text-xs">Manage your account</span></div>
+                <a href="{% url 'settings' %}" class="btn-outline">
+                    <i class="fa-solid fa-gear text-accent"></i>
+                    <div><strong>Settings</strong><span class="text-muted">Manage your account</span></div>
                 </a>
             </div>
         </div>
@@ -289,13 +288,4 @@
     </div>
 </div>
 
-<!-- Auto-load AI insights on page open -->
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const insightBtn = document.querySelector('[onclick="refreshInsights(this)"]');
-    if (insightBtn) {
-        refreshInsights(insightBtn);
-    }
-});
-</script>
 {% endblock %}

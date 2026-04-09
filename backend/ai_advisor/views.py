@@ -1,90 +1,84 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
 import os
-# groq api
 from groq import Groq
-# gemini api
-from google import genai
-from google.genai import types
+from .models import Conversation, ChatMessage
 
-# Create your views here.
-@login_required(login_url="signin")
+@login_required(login_url="login")
 def chat(request):
-    return render(request, "ai_advisor/chat.html")
+    conversations = Conversation.objects.filter(user=request.user)
+    return render(request, "ai_advisor/chat.html", {"conversations": conversations})
 
 client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
+@login_required(login_url="login")
 @csrf_exempt
 def chatbot(request):
     if request.method == "POST":
-        data = json.loads(request.body)
-
-        message = data.get("message")
-        history = data.get("history", [])
-
-        # Start with system message
-        messages = [
-            {
-                "role": "system",
-                "content": """
-You are a senior tax consultant providing professional financial guidance.
-
-Respond with clarity, structure, and practical reasoning. Be concise, confident, and professional.
-
-Maintain a professional but conversational tone. Avoid overly corporate or rigid phrasing.
-
-Adapt naturally to the user's message and avoid repetitive greetings or unnecessary introductions.
-
-Do not assume jurisdiction without confirmation.
-
-Never mention underlying AI systems.
-
-CONSULTATION FLOW:
-
-When a user provides financial details:
-- First summarize the information clearly in bullet points.
-- Then identify any missing or relevant details required.
-- Ask focused follow-up questions before giving final recommendations.
-- Proceed step-by-step rather than giving broad advice immediately.
-"""
-            }
-        ]
-
-        # Add previous chat history
-        for msg in history:
-            if msg["sender"] == "user":
-                messages.append({
-                    "role": "user",
-                    "content": msg["text"]
-                })
+        try:
+            data = json.loads(request.body)
+            message_text = data.get("message")
+            conversation_id = data.get("conversation_id")
+            
+            # Get or create conversation
+            if conversation_id:
+                conversation = get_object_or_404(Conversation, id=conversation_id, user=request.user)
             else:
-                messages.append({
-                    "role": "assistant",
-                    "content": msg["text"]
-                })
+                conversation = Conversation.objects.create(user=request.user, title=message_text[:30] + "...")
 
-        # Add current user message
-        messages.append({
-            "role": "user",
-            "content": message
-        })
+            # Save user message
+            ChatMessage.objects.create(conversation=conversation, sender='user', text=message_text)
 
-        # Send to Groq
-        completion = client.chat.completions.create(
-            model="openai/gpt-oss-120b",
-            messages=messages,
-            temperature=0.4,
-            max_completion_tokens=1200,
-        )
+            # Build history for Groq
+            history_messages = conversation.messages.all().order_by('created_at')
+            messages = [
+                {"role": "system", "content": "You are a senior tax consultant providing professional financial guidance. Respond with clarity, structure, and practical reasoning. Be concise, confident, and professional. Adapt naturally to the user's message. Never mention underlying AI systems."}
+            ]
+            for msg in history_messages:
+                role = "user" if msg.sender == "user" else "assistant"
+                messages.append({"role": role, "content": msg.text})
 
-        reply = completion.choices[0].message.content
+            # Send to Groq
+            completion = client.chat.completions.create(
+                model="llama-3.3-70b-versatile", # Reliable pro model
+                messages=messages,
+                temperature=0.4,
+                max_completion_tokens=1000,
+            )
 
-        return JsonResponse({"reply": reply})
+            reply_text = completion.choices[0].message.content
 
-    return JsonResponse(
-        {"error": "Only POST method allowed"},
-        status=405
-    )
+            # Save AI reply
+            ChatMessage.objects.create(conversation=conversation, sender='ai', text=reply_text)
+            
+            # Update conversation timestamp
+            conversation.save() 
+
+            return JsonResponse({
+                "reply": reply_text, 
+                "conversation_id": conversation.id,
+                "conversation_title": conversation.title
+            })
+
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+
+    return JsonResponse({"error": "Only POST method allowed"}, status=405)
+
+@login_required(login_url="login")
+def get_history(request, conversation_id):
+    conversation = get_object_or_404(Conversation, id=conversation_id, user=request.user)
+    messages = conversation.messages.all().values('sender', 'text', 'created_at')
+    return JsonResponse({"messages": list(messages)})
+
+@login_required(login_url="login")
+@csrf_exempt
+def delete_conversation(request, conversation_id):
+    if request.method == "POST":
+        conversation = get_object_or_404(Conversation, id=conversation_id, user=request.user)
+        conversation.delete()
+        return JsonResponse({"status": "success"})
+    return JsonResponse({"status": "error"}, status=405)
