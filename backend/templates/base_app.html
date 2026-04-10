@@ -6,16 +6,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Dashboard - AI Tax Assistant{% endblock %}</title>
-    
+
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <!-- Shared Styles -->
     <link rel="stylesheet" href="{% static 'style.css' %}">
     <link rel="stylesheet" href="{% static 'dashboard.css' %}">
-    
+
     <!-- Markdown Pre-processor -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    
+
     {% block extra_head %}{% endblock %}
 </head>
 
@@ -47,183 +47,33 @@
                 <span class="nav-icon"><i class="fa-solid fa-clock-rotate-left"></i></span>
                 <span class="nav-label">History</span>
             </a>
-            <div class="nav-dropdown-wrapper">
-                <a href="{% url 'chat' %}" class="nav-item" id="chatNavTrigger">
-                    <span class="nav-icon"><i class="fa-solid fa-robot"></i></span>
-                    <span class="nav-label">AI Chat</span>
-                    <i class="fa-solid fa-chevron-down dropdown-arrow" style="font-size: 0.7rem; margin-left: auto; opacity: 0.5;"></i>
-                </a>
-                <div class="nav-dropdown-content" id="chatDropdown">
-                    <a href="{% url 'chat' %}" class="dropdown-link new-chat-action">
-                        <i class="fa-solid fa-plus-circle"></i> New Conversation
-                    </a>
-                    <div class="dropdown-divider"></div>
-                    <div class="history-scroll-area">
-                        {% for conv in recent_conversations %}
-                        <div class="dropdown-history-item" data-id="{{ conv.id }}">
-                            <a href="{% url 'chat' %}?id={{ conv.id }}" class="history-link">
-                                <i class="fa-regular fa-message"></i>
-                                <span>{{ conv.title }}</span>
-                            </a>
-                            <button class="delete-btn" onclick="confirmDelete(event, {{ conv.id }}, this)" title="Delete Chat">
-                                <i class="fa-solid fa-trash-can"></i>
-                            </button>
-                        </div>
-                        {% empty %}
-                        <div class="empty-dropdown text-muted text-xs p-3">No recent chats</div>
-                        {% endfor %}
-                    </div>
+            <a href="{% url 'chat' %}" class="nav-item chat-expandable" onclick="toggleChatMenu()">
+                <span class="nav-icon"><i class="fa-solid fa-robot"></i></span>
+                <span class="nav-label">AI Chat</span>
+                <i class="fa-solid fa-chevron-down ml-auto"></i>
+            </a>
+            <div class="chat-submenu" id="chatSubmenu" style="display: none;">
+                <button class="new-chat-btn-sidebar" onclick="resetChat()">
+                    <i class="fa-solid fa-plus"></i> New Chat
+                </button>
+
+                <div class="chat-history-sidebar" id="historyList">
+                    <!-- JS will fill -->
                 </div>
+
             </div>
         </nav>
     </aside>
 
-    <!-- CUSTOM DELETE MODAL -->
-    <div id="deleteConfirmModal" class="modal-overlay" style="z-index: 2000;">
-        <div class="modal-content card-glow-hover" style="max-width: 400px; text-align: center; padding: 2rem;">
-            <div style="font-size: 3rem; color: #ef4444; margin-bottom: 1.5rem;">
-                <i class="fa-solid fa-circle-exclamation"></i>
-            </div>
-            <h3 class="mb-2">Are you sure?</h3>
-            <p class="text-muted text-sm mb-4">This will permanently delete this conversation and all its history. This action cannot be undone.</p>
-            <div style="display: flex; gap: 1rem; justify-content: center;">
-                <button class="btn-outline" onclick="closeDeleteModal()">Cancel</button>
-                <button id="finalDeleteBtn" class="btn-primary" style="background: #ef4444; border-color: #ef4444;">Delete Chat</button>
-            </div>
-        </div>
-    </div>
-
-    <style>
-        /* Sidebar Dropdown Styles */
-        .nav-dropdown-wrapper { position: relative; }
-        .nav-dropdown-content {
-            display: none;
-            position: fixed;
-            left: var(--sidebar-width);
-            top: 150px;
-            width: 260px;
-            background: rgba(10, 10, 10, 0.95);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            margin-left: 10px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.6), 0 0 20px rgba(199, 240, 0, 0.05);
-            overflow: hidden;
-            z-index: 9999;
-        }
-        
-        .nav-dropdown-wrapper:hover .nav-dropdown-content { 
-            display: block; 
-            animation: fadeInMenu 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        @keyframes fadeInMenu {
-            from { opacity: 0; transform: translateX(-15px) scale(0.98); }
-            to { opacity: 1; transform: translateX(0) scale(1); }
-        }
-
-        /* Dropdown Inner Content Styles */
-        .dropdown-link {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 1rem;
-            color: var(--text-main);
-            text-decoration: none;
-            font-size: 0.85rem;
-            transition: all 0.2s;
-        }
-        .dropdown-link:hover { background: rgba(199, 240, 0, 0.1); color: var(--accent-neon); }
-        .dropdown-divider { height: 1px; background: var(--border-color); }
-        
-        .history-scroll-area { max-height: 300px; overflow-y: auto; }
-        .dropdown-history-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0.5rem 1rem;
-            transition: background 0.2s;
-            opacity: 0;
-            transform: translateX(-10px);
-        }
-        .dropdown-history-item:hover { background: rgba(255,255,255,0.03); }
-        .nav-dropdown-wrapper:hover .dropdown-history-item {
-            animation: staggerSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-        .history-link {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: var(--text-muted);
-            text-decoration: none;
-            font-size: 0.8rem;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            flex: 1;
-        }
-        .dropdown-history-item:hover .history-link { color: var(--text-main); }
-        .delete-btn {
-            background: transparent;
-            border: none;
-            color: #ef4444;
-            opacity: 0;
-            cursor: pointer;
-            transition: opacity 0.2s;
-            padding: 5px;
-        }
-        .dropdown-history-item:hover .delete-btn { opacity: 0.6; }
-        .delete-btn:hover { opacity: 1 !important; transform: scale(1.1); }
-
-        /* Staggered Delays */
-        .dropdown-history-item:nth-child(1) { animation-delay: 0.1s; }
-        .dropdown-history-item:nth-child(2) { animation-delay: 0.15s; }
-        .dropdown-history-item:nth-child(3) { animation-delay: 0.2s; }
-        .dropdown-history-item:nth-child(4) { animation-delay: 0.25s; }
-        .dropdown-history-item:nth-child(5) { animation-delay: 0.3s; }
-
-        @keyframes staggerSlideIn {
-            to { opacity: 1; transform: translateX(0); }
-        }
-
-        .app-sidebar.collapsed + .app-main .nav-dropdown-content {
-            left: 80px;
-        }
-
-        /* Modal fixes */
-        #deleteConfirmModal { display: none; align-items: center; justify-content: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); }
-        #deleteConfirmModal.active { display: flex; }
-    </style>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const wrapper = document.querySelector('.nav-dropdown-wrapper');
-            const dropdown = document.getElementById('chatDropdown');
-            const trigger = document.getElementById('chatNavTrigger');
-
-            if (wrapper && dropdown && trigger) {
-                wrapper.addEventListener('mouseenter', () => {
-                    const rect = trigger.getBoundingClientRect();
-                    const sidebar = document.getElementById('appSidebar');
-                    const isCollapsed = sidebar.classList.contains('collapsed');
-                    
-                    dropdown.style.top = `${rect.top}px`;
-                    dropdown.style.left = isCollapsed ? '75px' : '255px';
-                });
-            }
-        });
-    </script>
-
     <!-- MAIN CONTENT WRAPPER -->
     <div class="app-main">
-        
+
         <!-- TOPBAR -->
         <header class="app-topbar">
             <div class="topbar-left">
                 <h2 class="page-title">{% block page_title %}Dashboard{% endblock %}</h2>
             </div>
-            
+
             <div class="topbar-right">
                 <div class="user-profile-dropdown" id="userProfileDropdown">
                     <div class="user-profile-trigger" id="dropdownTrigger">
@@ -232,7 +82,8 @@
                             {{ request.user.username|make_list|first|upper }}
                         </div>
                         <span class="user-name">{{ request.user.username }}</span>
-                        <i class="fa-solid fa-chevron-down" style="font-size: 0.8rem; margin-left: 5px; color: var(--text-muted);"></i>
+                        <i class="fa-solid fa-chevron-down"
+                            style="font-size: 0.8rem; margin-left: 5px; color: var(--text-muted);"></i>
                     </div>
 
                     <!-- Dropdown Menu -->
@@ -242,10 +93,13 @@
                             <span class="d-block text-muted text-sm">{{ request.user.email }}</span>
                         </div>
                         <hr class="nav-divider" style="margin: 0.5rem 0;">
-                        <a href="{% url 'profile' %}" class="dropdown-item"><i class="fa-regular fa-user"></i> Profile</a>
-                        <a href="{% url 'settings' %}" class="dropdown-item"><i class="fa-solid fa-gear"></i> Settings</a>
+                        <a href="{% url 'profile' %}" class="dropdown-item"><i class="fa-regular fa-user"></i>
+                            Profile</a>
+                        <a href="{% url 'settings' %}" class="dropdown-item"><i class="fa-solid fa-gear"></i>
+                            Settings</a>
                         <hr class="nav-divider" style="margin: 0.5rem 0;">
-                        <a href="{% url 'logout' %}" class="dropdown-item text-danger"><i class="fa-solid fa-arrow-right-from-bracket"></i> Log Out</a>
+                        <a href="{% url 'logout' %}" class="dropdown-item text-danger"><i
+                                class="fa-solid fa-arrow-right-from-bracket"></i> Log Out</a>
                     </div>
                 </div>
             </div>
@@ -254,22 +108,35 @@
         <!-- PAGE CONTENT -->
         <main class="app-content container-fluid">
             {% if messages %}
-                <div style="display: none;">
-                    {% for message in messages %}
-                        <div class="django-message-data" data-level="{{ message.tags }}">{{ message }}</div>
-                    {% endfor %}
-                </div>
+            <div style="display: none;">
+                {% for message in messages %}
+                <div class="django-message-data" data-level="{{ message.tags }}">{{ message }}</div>
+                {% endfor %}
+            </div>
             {% endif %}
-            
+
             {% block content %}
             {% endblock %}
         </main>
-        
+
     </div>
 
     <!-- Scripts -->
     <script src="{% static 'dashboard.js' %}"></script>
-    {% block extra_scripts %}{% endblock %}
+    <script>
+        function toggleChatMenu() {
+            const menu = document.getElementById('chatSubmenu');
+            if (menu) {
+                menu.classList.toggle('active');
+            }
+        }
+
+        function resetChat() {
+            // redirect to chat page and start fresh
+            window.location.href = "/ai/chat/?new=true";
+        }
+    </script> {% block extra_scripts %}{% endblock %}
 
 </body>
+
 </html>

@@ -1,6 +1,4 @@
 let currentConversationId = null;
-let pendingDeleteId = null;
-let pendingDeleteElement = null;
 
 // Initialize marked
 marked.setOptions({
@@ -11,107 +9,77 @@ marked.setOptions({
 document.addEventListener('DOMContentLoaded', () => {
     const messageInput = document.getElementById('messageInput');
     const sendBtn = document.getElementById('sendBtn');
-    
-    // Existing Chat Page Elements
+    const newChatBtn = document.getElementById('newChatBtnPrimary');
+    const submenu = document.getElementById("chatSubmenu");
+
+    if (!submenu) return;
+
+    const started = localStorage.getItem("chatStarted");
+
+    if (started === "true") {
+        submenu.style.display = "flex";
+    } else {
+        submenu.style.display = "none";
+    }
+
     if (sendBtn) sendBtn.onclick = sendMessage;
     if (messageInput) {
         messageInput.onkeydown = (e) => {
             if (e.key === 'Enter') sendMessage();
         };
     }
-
-    // Sidebar Dropdown Initialization
-    const newChatActions = document.querySelectorAll('.new-chat-action');
-    newChatActions.forEach(btn => {
-        btn.onclick = (e) => {
-            if (window.location.pathname.includes('/ai/chat/')) {
-                e.preventDefault();
-                resetChat();
-                // Close dropdown if mobile
-                document.getElementById('chatDropdown').style.display = 'none';
-                setTimeout(() => document.getElementById('chatDropdown').removeAttribute('style'), 100);
-            }
+    if (newChatBtn) {
+        newChatBtn.onclick = () => {
+            resetChat();
         };
-    });
-
-    // Handle Dropdown History Clicks (SPA behavior if on chat page)
-    const historyLinks = document.querySelectorAll('.history-link');
-    historyLinks.forEach(link => {
-        link.onclick = (e) => {
-            if (window.location.pathname.includes('/ai/chat/')) {
-                e.preventDefault();
-                const parent = link.closest('.dropdown-history-item');
-                const id = parent.dataset.id;
-                loadConversation(id, parent);
-            }
-        };
-    });
-
-    // Check for ID in URL on load
-    const urlParams = new URLSearchParams(window.location.search);
-    const idParam = urlParams.get('id');
-    if (idParam && window.location.pathname.includes('/ai/chat/')) {
-        loadConversation(idParam);
-    }
-    
-    // Wire up Modal Delete Button
-    const finalDeleteBtn = document.getElementById('finalDeleteBtn');
-    if (finalDeleteBtn) {
-        finalDeleteBtn.onclick = executeDelete;
     }
 });
 
 function fillInput(text) {
     const input = document.getElementById('messageInput');
-    if (input) {
-        input.value = text;
-        input.focus();
-    }
+    input.value = text;
+    input.focus();
 }
 
 function resetChat() {
     currentConversationId = null;
-    const msgContainer = document.getElementById('messages');
-    const landing = document.getElementById('landingScreen');
-    if (msgContainer && landing) {
-        msgContainer.style.display = 'none';
-        msgContainer.innerHTML = '';
-        landing.style.display = 'flex';
-        document.getElementById('messageInput').value = '';
+
+    localStorage.removeItem("chatStarted");
+
+    const submenu = document.getElementById("chatSubmenu");
+    if (submenu) {
+        submenu.style.display = "none";
     }
-    // Update URL without reload
-    window.history.pushState({}, '', window.location.pathname);
+
+    document.getElementById('messages').style.display = 'none';
+    document.getElementById('messages').innerHTML = '';
+    document.getElementById('landingScreen').style.display = 'flex';
+    document.getElementById('messageInput').value = '';
 }
 
-async function loadConversation(id, element = null) {
+async function loadConversation(id, element) {
     currentConversationId = id;
-    
-    // UI Transitions
-    const landing = document.getElementById('landingScreen');
-    const msgContainer = document.getElementById('messages');
-    
-    if (landing) landing.style.display = 'none';
-    if (msgContainer) {
-        msgContainer.style.display = 'flex';
-        msgContainer.innerHTML = '<div class="text-center p-5"><span class="typing"><span></span><span></span><span></span></span><br><span class="text-xs text-muted">Retrieving history...</span></div>';
-    }
 
-    // Update URL without reload
-    window.history.pushState({}, '', `?id=${id}`);
+    // UI Updates
+    document.querySelectorAll('.history-item').forEach(el => el.classList.remove('active'));
+    element.classList.add('active');
+
+    document.getElementById('landingScreen').style.display = 'none';
+    const msgContainer = document.getElementById('messages');
+    msgContainer.style.display = 'flex';
+    msgContainer.innerHTML = '<div class="text-center p-5"><i class="fa-solid fa-spinner fa-spin"></i> Loading conversation...</div>';
 
     try {
         const response = await fetch(`/ai/history/${id}/`);
         const data = await response.json();
-        
-        if (msgContainer) {
-            msgContainer.innerHTML = '';
-            data.messages.forEach(msg => {
-                renderMessage(msg.text, msg.sender);
-            });
-            scrollToBottom();
-        }
+
+        msgContainer.innerHTML = '';
+        data.messages.forEach(msg => {
+            renderMessage(msg.text, msg.sender);
+        });
+        scrollToBottom();
     } catch (error) {
-        if (msgContainer) msgContainer.innerHTML = '<div class="text-danger p-4">Error loading history.</div>';
+        msgContainer.innerHTML = '<div class="text-danger p-4">Error loading history.</div>';
     }
 }
 
@@ -120,11 +88,10 @@ async function sendMessage() {
     const text = input.value.trim();
     if (!text) return;
 
-    const landing = document.getElementById('landingScreen');
+    // Transition from landing to chat if needed
+    document.getElementById('landingScreen').style.display = 'none';
     const msgContainer = document.getElementById('messages');
-
-    if (landing) landing.style.display = 'none';
-    if (msgContainer) msgContainer.style.display = 'flex';
+    msgContainer.style.display = 'flex';
 
     renderMessage(text, 'user');
     input.value = '';
@@ -135,10 +102,21 @@ async function sendMessage() {
     const typingDiv = document.createElement('div');
     typingDiv.id = typingId;
     typingDiv.className = 'ai-msg ai';
-    typingDiv.innerHTML = `<div class="typing"><span></span><span></span><span></span></div>`;
-    if (msgContainer) {
-        msgContainer.appendChild(typingDiv);
-        scrollToBottom();
+    typingDiv.innerHTML = `
+        <div class="typing">
+            <span></span><span></span><span></span>
+        </div>
+    `;
+    msgContainer.appendChild(typingDiv);
+    scrollToBottom();
+
+    // Mark chat as started
+    localStorage.setItem("chatStarted", "true");
+
+    // Show sidebar menu
+    const submenu = document.getElementById("chatSubmenu");
+    if (submenu) {
+        submenu.style.display = "flex";
     }
 
     try {
@@ -152,33 +130,33 @@ async function sendMessage() {
         });
 
         const data = await response.json();
-        const typingEl = document.getElementById(typingId);
-        if (typingEl) typingEl.remove();
+
+        // Remove typing
+        document.getElementById(typingId).remove();
 
         if (data.reply) {
             renderMessage(data.reply, 'ai');
+
+            // Check if this was a new conversation
             if (!currentConversationId && data.conversation_id) {
                 currentConversationId = data.conversation_id;
-                window.history.pushState({}, '', `?id=${data.conversation_id}`);
-                // Note: The sidebar dropdown will update on next page refresh or we could live-inject it
+                addHistoryItem(data.conversation_id, data.conversation_title);
             }
             scrollToBottom();
         }
     } catch (err) {
-        const typingEl = document.getElementById(typingId);
-        if (typingEl) typingEl.remove();
+        document.getElementById(typingId).remove();
         renderMessage("I'm sorry, I'm having trouble connecting right now. Please try again.", 'ai');
     }
 }
 
 function renderMessage(text, sender) {
     const container = document.getElementById('messages');
-    if (!container) return;
-    
     const msgDiv = document.createElement('div');
     msgDiv.className = `ai-msg ${sender}`;
+
     const htmlContent = sender === 'ai' ? marked.parse(text) : text;
-    
+
     msgDiv.innerHTML = `
         <div class="content">${htmlContent}</div>
         <div class="meta">${sender === 'ai' ? 'AI Advisor' : 'You'} • Just now</div>
@@ -188,49 +166,60 @@ function renderMessage(text, sender) {
 
 function scrollToBottom() {
     const container = document.getElementById('messages');
-    if (container) container.scrollTop = container.scrollHeight;
+    container.scrollTop = container.scrollHeight;
 }
 
-// MODAL LOGIC
-window.confirmDelete = function(event, id, element) {
-    if (event) event.stopPropagation();
-    pendingDeleteId = id;
-    pendingDeleteElement = element;
-    const modal = document.getElementById('deleteConfirmModal');
-    if (modal) modal.classList.add('active');
+function addHistoryItem(id, title) {
+    const list = document.getElementById('historyList');
+    const item = document.createElement('div');
+    item.className = 'history-item active';
+    item.onclick = function () { loadConversation(id, this); };
+    item.innerHTML = `
+        <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;">
+            <i class="fa-regular fa-message text-xs mr-2" style="opacity: 0.5;"></i>
+            <span class="text-sm">${title}</span>
+        </div>
+        <button class="icon-btn text-xs delete-conv" onclick="deleteConversation(event, ${id}, this)" style="opacity: 1; transition: opacity 0.2s;">
+            <i class="fa-solid fa-trash-can"></i>
+        </button>
+    `;
+    list.prepend(item);
 }
 
-window.closeDeleteModal = function() {
-    const modal = document.getElementById('deleteConfirmModal');
-    if (modal) modal.classList.remove('active');
-    pendingDeleteId = null;
-    pendingDeleteElement = null;
-}
-
-async function executeDelete() {
-    if (!pendingDeleteId) return;
-    
-    const btn = document.getElementById('finalDeleteBtn');
-    const originalText = btn.innerText;
-    btn.innerText = "Deleting...";
-    btn.disabled = true;
+async function deleteConversation(event, id, element) {
+    event.stopPropagation();
+    if (!confirm('Delete this conversation?')) return;
 
     try {
-        const response = await fetch(`/ai/delete/${pendingDeleteId}/`, { method: 'POST' });
+        const response = await fetch(`/ai/delete/${id}/`, { method: 'POST' });
         if (response.ok) {
-            if (pendingDeleteElement) {
-                pendingDeleteElement.closest('.dropdown-history-item').remove();
-            }
-            if (currentConversationId == pendingDeleteId) {
+            element.closest('.history-item').remove();
+            if (currentConversationId == id) {
                 resetChat();
             }
-            showToast("Conversation deleted successfully", "success");
         }
     } catch (err) {
-        showToast("Error deleting conversation", "error");
-    } finally {
-        btn.innerText = originalText;
-        btn.disabled = false;
-        closeDeleteModal();
+        console.error('Failed to delete');
     }
+}
+
+function toggleChatDropdown() {
+    const menu = document.getElementById('chatDropdownMenu');
+    menu.classList.toggle('active');
+}
+
+// close when clicking outside
+document.addEventListener('click', function (e) {
+    const dropdown = document.querySelector('.chat-dropdown');
+    if (dropdown && !dropdown.contains(e.target)) {
+        document.getElementById('chatDropdownMenu')?.classList.remove('active');
+    }
+});
+
+function toggleChatMenu() {
+    const menu = document.getElementById('chatSubmenu');
+    menu.classList.toggle('active');
+}
+if (!window.location.pathname.includes('/ai/chat')) {
+    localStorage.removeItem("chatStarted");
 }

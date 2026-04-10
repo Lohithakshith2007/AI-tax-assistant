@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block title %}AI Advisor - AI Tax Assistant{% endblock %}
-{% block page_title %}AI Tax Advisor{% endblock %}
+{% block page_title %}{% endblock %}
 
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'chat.css' %}">
@@ -11,17 +11,9 @@
     .chat-workspace {
         display: flex;
         height: calc(100vh - 120px);
-        margin: -1rem; /* counteract page padding */
+        margin: -1rem;
+        /* counteract page padding */
         overflow: hidden;
-    }
-
-    .chat-sidebar {
-        width: 280px;
-        background: rgba(0, 0, 0, 0.2);
-        border-right: 1px solid var(--border-color);
-        display: flex;
-        flex-direction: column;
-        transition: transform 0.3s ease;
     }
 
     .chat-main {
@@ -47,15 +39,14 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: center;
         text-align: center;
         padding: 2rem;
+        margin-top: 85px;
     }
 
     .gemini-title {
         font-size: 2.5rem;
         font-weight: 700;
-        margin-bottom: 2rem;
         background: linear-gradient(90deg, #fff 0%, var(--accent-neon) 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
@@ -80,12 +71,15 @@
         display: flex;
         align-items: center;
         gap: 0.5rem;
+        opacity: 0;
+        transform: translateY(10px);
+        animation: revealUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
     .pill:hover {
         background: rgba(199, 240, 0, 0.1);
         border-color: var(--accent-neon);
-        transform: translateY(-2px);
+        transform: translateY(-5px);
     }
 
     .chat-input-area {
@@ -103,7 +97,7 @@
         display: flex;
         align-items: center;
         gap: 1rem;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
         transition: border-color 0.3s ease;
     }
 
@@ -122,7 +116,7 @@
 
     .history-item {
         padding: 1rem 1.5rem;
-        border-bottom: 1px solid rgba(255,255,255,0.05);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         cursor: pointer;
         transition: background 0.2s;
         display: flex;
@@ -131,11 +125,11 @@
     }
 
     .history-item:hover {
-        background: rgba(199,240,0,0.05);
+        background: rgba(199, 240, 0, 0.05);
     }
 
     .history-item.active {
-        background: rgba(199,240,0,0.1);
+        background: rgba(199, 240, 0, 0.1);
         border-left: 3px solid var(--accent-neon);
     }
 </style>
@@ -145,11 +139,6 @@
 <div class="chat-workspace" style="display: flex; height: calc(100vh - 120px); overflow: hidden;">
     <!-- MAIN WORKSPACE -->
     <div class="chat-main" id="chatMain" style="flex: 1; display: flex; flex-direction: column; position: relative;">
-        <!-- Branding Header -->
-        <div class="chat-branding-header">
-            <div class="status-dot"></div>
-            AI Tax Assistant
-        </div>
 
         <!-- Messages Area -->
         <div class="messages-container" id="messages" style="display: none;"></div>
@@ -157,30 +146,39 @@
         <!-- Landing State -->
         <div class="landing-screen" id="landingScreen">
             <h1 class="gemini-title">Hi {{ request.user.username }},<br>Where should we start?</h1>
-            <div class="suggestion-pills">
-                <div class="pill" onclick="fillInput('Optimize my tax for 2024')"><i class="fa-solid fa-receipt text-accent"></i> Optimize my tax for 2024</div>
-                <div class="pill" onclick="fillInput('Deduction suggestions for remote work')"><i class="fa-solid fa-laptop-house text-accent"></i> Remote work deductions</div>
-                <div class="pill" onclick="fillInput('How can I save GST on business expenses?')"><i class="fa-solid fa-building-columns text-accent"></i> GST Saving Tips</div>
-                <div class="pill" onclick="fillInput('Explain capital gains tax simply')"><i class="fa-solid fa-chart-line text-accent"></i> Capital Gains help</div>
-            </div>
-        </div>
 
-        <!-- Tagline Footer -->
-        <div class="chat-footer-tagline">
-            Real-time AI explanations • Built for learning
-        </div>
-
-        <!-- Input Area (Persistent at bottom) -->
-        <div class="chat-input-area">
-            <div class="premium-input-wrapper">
-                <i class="fa-solid fa-plus text-muted" style="cursor: pointer;"></i>
-                <input type="text" id="messageInput" placeholder="Ask AI Tax Advisor...">
-                <div style="display: flex; align-items: center; gap: 0.75rem;">
-                    <span class="text-xs text-muted font-weight-bold" style="background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px;">FAST</span>
-                    <button id="sendBtn" style="background: transparent; border: none; color: var(--accent-neon); cursor: pointer; font-size: 1.2rem;">
-                        <i class="fa-solid fa-paper-plane"></i>
-                    </button>
+            <!-- Input Area -->
+            <div class="chat-input-area">
+                <div class="premium-input-wrapper">
+                    <i class="fa-solid fa-plus text-muted" style="cursor: pointer;"></i>
+                    <input type="text" id="messageInput" placeholder="Ask AI Tax Advisor...">
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <span class="text-xs text-muted font-weight-bold"
+                            style="background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px;">FAST</span>
+                        <button id="sendBtn"
+                            style="background: transparent; border: none; color: var(--accent-neon); cursor: pointer; font-size: 1.2rem;">
+                            <i class="fa-solid fa-paper-plane"></i>
+                        </button>
+                    </div>
                 </div>
+            </div>
+
+            <div class="suggestion-pills">
+                <div class="pill" onclick="fillInput('Optimize my tax for 2024')"><i
+                        class="fa-solid fa-receipt text-accent"></i> Optimize my tax for 2024</div>
+                <div class="pill" onclick="fillInput('Deduction suggestions for remote work')"><i
+                        class="fa-solid fa-laptop-house text-accent"></i> Remote work deductions</div>
+                <div class="pill" onclick="fillInput('How can I save GST on business expenses?')"><i
+                        class="fa-solid fa-building-columns text-accent"></i> GST Saving Tips</div>
+                <div class="pill" onclick="fillInput('Explain capital gains tax simply')"><i
+                        class="fa-solid fa-chart-line text-accent"></i> Capital Gains help</div>
+                <div class="pill" onclick="fillInput('Help me file my ITR easily')"><i
+                        class="fa-solid fa-file-invoice-dollar text-accent"></i> File ITR Help</div>
+            </div>
+
+            <!-- Tagline Footer -->
+            <div class="chat-footer-tagline">
+                Real-time AI explanations • Built for learning
             </div>
         </div>
     </div>
