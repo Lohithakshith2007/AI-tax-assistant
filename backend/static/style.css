@@ -276,6 +276,7 @@ main {
     padding: 0.7rem 0.9rem;
     border-radius: 10px;
     max-width: 90%;
+    animation: fadeInContent 0.5s ease backwards;
 }
 
 .ai-msg.user {
