@@ -387,3 +387,200 @@
         font-size: 0.8rem;
         padding: 0.5rem;
     }
+
+    .chat-screen {
+        display: none;
+        flex: 1;
+        flex-direction: column;
+        min-height: 0;
+        width: 100%;
+    }
+
+    .chat-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1rem;
+        padding: 1.25rem 4rem 0;
+        max-width: 900px;
+        width: 100%;
+        margin: 0 auto;
+    }
+
+    .chat-header-left {
+        display: flex;
+        flex-direction: column;
+        gap: 0.3rem;
+        color: white;
+    }
+
+    .chat-subtitle {
+        margin: 0;
+        color: rgba(255, 255, 255, 0.72);
+        font-size: 0.95rem;
+        max-width: 560px;
+    }
+
+    .chat-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    .chat-dropdown-toggle {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        color: white;
+        padding: 0.85rem 1rem;
+        border-radius: 12px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        min-width: 220px;
+        transition: background 0.2s ease, border-color 0.2s ease;
+    }
+
+    .chat-dropdown-toggle:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(199, 240, 0, 0.5);
+    }
+
+    .chat-dropdown-menu {
+        width: 320px;
+        background: #111;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.48);
+    }
+
+    .chat-history-list {
+        max-height: 260px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        padding: 0.75rem;
+    }
+
+    .chat-history-item {
+        width: 100%;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        color: white;
+        padding: 0.85rem 1rem;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+        font-size: 0.92rem;
+        cursor: pointer;
+        transition: background 0.2s ease, transform 0.2s ease;
+        text-align: left;
+    }
+
+    .chat-history-item:hover {
+        background: rgba(199, 240, 0, 0.08);
+        transform: translateX(2px);
+    }
+
+    .chat-history-empty {
+        padding: 1rem 1rem 0.75rem;
+        color: rgba(255, 255, 255, 0.62);
+        font-size: 0.95rem;
+    }
+
+    .chat-new-link {
+        background: transparent;
+        border: 1px solid var(--accent-neon);
+        color: var(--accent-neon);
+        padding: 0.85rem 1rem;
+        border-radius: 12px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 600;
+        transition: background 0.2s ease;
+    }
+
+    .chat-new-link:hover {
+        background: rgba(199, 240, 0, 0.12);
+    }
+
+    .chat-input-footer {
+        padding: 1rem 4rem 2rem;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.55) 100%);
+    }
+
+    .chat-input-footer .premium-input-wrapper {
+        width: 100%;
+        max-width: 900px;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .chat-input-footer input {
+        flex: 1;
+        background: transparent;
+        border: none;
+        color: white;
+        font-size: 1rem;
+        outline: none;
+    }
+
+    .chat-input-footer button {
+        background: transparent;
+        border: none;
+        color: var(--accent-neon);
+        cursor: pointer;
+        font-size: 1.3rem;
+        padding: 0.5rem;
+    }
+
+    .chat-send-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .app-sidebar .chat-submenu {
+        display: none !important;
+    }
+
+    .app-sidebar .chat-expandable .fa-chevron-down {
+        display: none;
+    }
+
+    .chat-submenu {
+        display: none !important;
+    }
+
+    /* Add this to your chat.css */
+    #landingScreen {
+        display: flex;
+        /* Ensure landing screen is visible initially */
+    }
+
+    #chatScreen {
+        display: none;
+        /* Hidden initially */
+        flex: 1;
+        flex-direction: column;
+    }
+
+    #messages {
+        display: none;
+        /* Hidden initially */
+    }
+
+    #chatInputWrapper {
+        display: none;
+        /* Hidden initially */
+    }

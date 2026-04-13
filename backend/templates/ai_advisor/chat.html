@@ -13,8 +13,38 @@
     <!-- MAIN WORKSPACE -->
     <div class="chat-main" id="chatMain" style="flex: 1; display: flex; flex-direction: column; position: relative;">
 
-        <!-- Messages Area -->
-        <div class="messages-container" id="messages" style="display: none;"></div>
+        <div class="chat-screen" id="chatScreen" style="display: none; flex: 1; flex-direction: column;">
+            <div class="chat-actions">
+                <div class="chat-dropdown">
+                    <button id="chatDropdownToggle" class="chat-dropdown-toggle" type="button">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                        Recent chats
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </button>
+                    <div class="chat-dropdown-menu" id="chatDropdownMenu">
+                        <div class="chat-history-list" id="chatHistoryList">
+                            {% if conversations %}
+                            {% for conv in conversations %}
+                            <button class="history-item chat-history-item" type="button"
+                                onclick="loadConversation({{ conv.id }}, this)">
+                                <span>{{ conv.title|truncatechars:30 }}</span>
+                                <i class="fa-solid fa-arrow-right-long"></i>
+                            </button>
+                            {% endfor %}
+                            {% else %}
+                            <div class="chat-history-empty">No recent chats yet.</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <button class="chat-new-link" id="chatNewLinkBtn" type="button" onclick="resetChat()">
+                    <i class="fa-solid fa-plus"></i> New chat
+                </button>
+            </div>
+        </div>
+
+        <div class="messages-container" id="messages"></div>
 
         <!-- Landing State -->
         <div class="landing-screen" id="landingScreen">
@@ -54,6 +84,15 @@
                 Real-time AI explanations • Built for learning
             </div>
         </div>
+
+        <div class="chat-input-footer">
+            <div class="premium-input-wrapper" id="chatInputWrapper" style="display: none;">
+                <input type="text" id="chatMessageInput" placeholder="Ask AI Tax Advisor..." autocomplete="off">
+                <button id="chatSendBtn" type="button" class="chat-send-button">
+                    <i class="fa-solid fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
@@ -61,4 +100,22 @@
 {% block extra_scripts %}
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="{% static 'chat.js' %}"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const submenu = document.getElementById("chatSubmenu");
+
+        // Only run on chat page
+        if (!window.location.pathname.includes('/ai/chat')) return;
+
+        const started = localStorage.getItem("chatStarted");
+
+        if (submenu) {
+            if (started === "true") {
+                submenu.style.display = "flex";
+            } else {
+                submenu.style.display = "none";
+            }
+        }
+    });
+</script>
 {% endblock %}

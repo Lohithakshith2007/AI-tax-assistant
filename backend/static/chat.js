@@ -1,4 +1,6 @@
 let currentConversationId = null;
+const CHAT_STARTED_KEY = 'chatStarted';
+const CHAT_CONVERSATION_KEY = 'currentConversationId';
 
 // Initialize marked
 marked.setOptions({
@@ -7,66 +9,125 @@ marked.setOptions({
 });
 
 document.addEventListener('DOMContentLoaded', () => {
-    const messageInput = document.getElementById('messageInput');
+    const landingInput = document.getElementById('messageInput');
+    const chatInput = document.getElementById('chatMessageInput');
     const sendBtn = document.getElementById('sendBtn');
-    const newChatBtn = document.getElementById('newChatBtnPrimary');
-    const submenu = document.getElementById("chatSubmenu");
+    const chatSendBtn = document.getElementById('chatSendBtn');
+    const chatDropdownToggle = document.getElementById('chatDropdownToggle');
+    const chatNewLinkBtn = document.getElementById('chatNewLinkBtn');
 
-    if (!submenu) return;
+    const started = localStorage.getItem(CHAT_STARTED_KEY);
+    const submenu = document.getElementById('chatSubmenu');
 
-    const started = localStorage.getItem("chatStarted");
+    if (submenu) {
+        if (started === 'true') {
+            submenu.style.display = 'flex';
+        } else {
+            submenu.style.display = 'none';
+        }
+    }
+    const storedConversationId = localStorage.getItem(CHAT_CONVERSATION_KEY);
 
-    if (started === "true") {
-        submenu.style.display = "flex";
-    } else {
-        submenu.style.display = "none";
+    if (started === 'true' && storedConversationId) {
+        currentConversationId = storedConversationId;
+        showChatScreen();
     }
 
     if (sendBtn) sendBtn.onclick = sendMessage;
-    if (messageInput) {
-        messageInput.onkeydown = (e) => {
+    if (chatSendBtn) chatSendBtn.onclick = sendMessage;
+
+    if (landingInput) {
+        landingInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') sendMessage();
-        };
+        });
     }
-    if (newChatBtn) {
-        newChatBtn.onclick = () => {
-            resetChat();
-        };
+
+    if (chatInput) {
+        chatInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+    }
+
+    if (chatDropdownToggle) {
+        chatDropdownToggle.addEventListener('click', toggleChatDropdown);
+    }
+
+    if (chatNewLinkBtn) {
+        chatNewLinkBtn.addEventListener('click', resetChat);
+    }
+
+    if (!window.location.pathname.includes('/ai/chat')) {
+        const submenu = document.getElementById('chatSubmenu');
+        if (submenu) submenu.style.display = 'none';
     }
 });
 
-function fillInput(text) {
-    const input = document.getElementById('messageInput');
-    input.value = text;
-    input.focus();
+function getActiveInput() {
+    const chatInput = document.getElementById('chatMessageInput');
+    const landingInput = document.getElementById('messageInput');
+
+    if (chatInput && chatInput.offsetParent !== null) {
+        return chatInput;
+    }
+
+    return landingInput;
+}
+
+function showChatScreen() {
+    const landingScreen = document.getElementById('landingScreen');
+    const chatScreen = document.getElementById('chatScreen');
+    const msgContainer = document.getElementById('messages');
+    const chatInputWrapper = document.getElementById('chatInputWrapper');
+
+    console.log('Showing chat screen'); // Debug log
+
+    if (landingScreen) landingScreen.style.display = 'none';
+    if (chatScreen) {
+        chatScreen.style.display = 'flex';
+        console.log('Chat screen display set to flex'); // Debug log
+    }
+    if (msgContainer) msgContainer.style.display = 'flex';
+    if (chatInputWrapper) chatInputWrapper.style.display = 'flex';
 }
 
 function resetChat() {
     currentConversationId = null;
+    localStorage.removeItem(CHAT_STARTED_KEY);
+    localStorage.removeItem(CHAT_CONVERSATION_KEY);
 
-    localStorage.removeItem("chatStarted");
+    const landingScreen = document.getElementById('landingScreen');
+    const chatScreen = document.getElementById('chatScreen');
+    const msgContainer = document.getElementById('messages');
+    const chatDropdownMenu = document.getElementById('chatDropdownMenu');
+    const messageInput = document.getElementById('messageInput');
+    const chatInput = document.getElementById('chatMessageInput');
+    const chatInputWrapper = document.getElementById('chatInputWrapper');
 
-    const submenu = document.getElementById("chatSubmenu");
-    if (submenu) {
-        submenu.style.display = "none";
+    if (landingScreen) landingScreen.style.display = 'flex';
+    if (chatScreen) chatScreen.style.display = 'none';
+    if (msgContainer) {
+        msgContainer.style.display = 'none';
+        msgContainer.innerHTML = '';
     }
-
-    document.getElementById('messages').style.display = 'none';
-    document.getElementById('messages').innerHTML = '';
-    document.getElementById('landingScreen').style.display = 'flex';
-    document.getElementById('messageInput').value = '';
+    if (chatDropdownMenu) chatDropdownMenu.classList.remove('active');
+    if (messageInput) messageInput.value = '';
+    if (chatInput) chatInput.value = '';
+    if (chatInputWrapper) chatInputWrapper.style.display = 'none';
 }
 
 async function loadConversation(id, element) {
     currentConversationId = id;
+    localStorage.setItem(CHAT_CONVERSATION_KEY, id);
 
-    // UI Updates
     document.querySelectorAll('.history-item').forEach(el => el.classList.remove('active'));
-    element.classList.add('active');
+    if (element) element.classList.add('active');
 
-    document.getElementById('landingScreen').style.display = 'none';
+    showChatScreen();
+
     const msgContainer = document.getElementById('messages');
-    msgContainer.style.display = 'flex';
     msgContainer.innerHTML = '<div class="text-center p-5"><i class="fa-solid fa-spinner fa-spin"></i> Loading conversation...</div>';
 
     try {
@@ -84,20 +145,17 @@ async function loadConversation(id, element) {
 }
 
 async function sendMessage() {
-    const input = document.getElementById('messageInput');
-    const text = input.value.trim();
+    const input = getActiveInput();
+    const text = input?.value.trim();
     if (!text) return;
 
-    // Transition from landing to chat if needed
-    document.getElementById('landingScreen').style.display = 'none';
-    const msgContainer = document.getElementById('messages');
-    msgContainer.style.display = 'flex';
+    showChatScreen();
 
+    const msgContainer = document.getElementById('messages');
     renderMessage(text, 'user');
     input.value = '';
     scrollToBottom();
 
-    // Show typing
     const typingId = 'typing-' + Date.now();
     const typingDiv = document.createElement('div');
     typingDiv.id = typingId;
@@ -110,14 +168,12 @@ async function sendMessage() {
     msgContainer.appendChild(typingDiv);
     scrollToBottom();
 
-    // Mark chat as started
-    localStorage.setItem("chatStarted", "true");
-
-    // Show sidebar menu
-    const submenu = document.getElementById("chatSubmenu");
+    localStorage.setItem(CHAT_STARTED_KEY, 'true');
+    const submenu = document.getElementById('chatSubmenu');
     if (submenu) {
-        submenu.style.display = "flex";
+        submenu.style.display = 'flex';
     }
+    if (currentConversationId) localStorage.setItem(CHAT_CONVERSATION_KEY, currentConversationId);
 
     try {
         const response = await fetch('/ai/chatbot/', {
@@ -130,22 +186,19 @@ async function sendMessage() {
         });
 
         const data = await response.json();
-
-        // Remove typing
-        document.getElementById(typingId).remove();
+        document.getElementById(typingId)?.remove();
 
         if (data.reply) {
             renderMessage(data.reply, 'ai');
-
-            // Check if this was a new conversation
             if (!currentConversationId && data.conversation_id) {
                 currentConversationId = data.conversation_id;
-                addHistoryItem(data.conversation_id, data.conversation_title);
+                localStorage.setItem(CHAT_CONVERSATION_KEY, currentConversationId);
+                addHistoryItem(data.conversation_id, data.conversation_title || text);
             }
             scrollToBottom();
         }
     } catch (err) {
-        document.getElementById(typingId).remove();
+        document.getElementById(typingId)?.remove();
         renderMessage("I'm sorry, I'm having trouble connecting right now. Please try again.", 'ai');
     }
 }
@@ -156,7 +209,6 @@ function renderMessage(text, sender) {
     msgDiv.className = `ai-msg ${sender}`;
 
     const htmlContent = sender === 'ai' ? marked.parse(text) : text;
-
     msgDiv.innerHTML = `
         <div class="content">${htmlContent}</div>
         <div class="meta">${sender === 'ai' ? 'AI Advisor' : 'You'} • Just now</div>
@@ -166,22 +218,20 @@ function renderMessage(text, sender) {
 
 function scrollToBottom() {
     const container = document.getElementById('messages');
-    container.scrollTop = container.scrollHeight;
+    if (container) container.scrollTop = container.scrollHeight;
 }
 
 function addHistoryItem(id, title) {
-    const list = document.getElementById('historyList');
-    const item = document.createElement('div');
-    item.className = 'history-item active';
+    const list = document.getElementById('chatHistoryList') || document.getElementById('historyList');
+    if (!list) return;
+
+    const item = document.createElement('button');
+    item.type = 'button';
+    item.className = 'history-item chat-history-item active';
     item.onclick = function () { loadConversation(id, this); };
     item.innerHTML = `
-        <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;">
-            <i class="fa-regular fa-message text-xs mr-2" style="opacity: 0.5;"></i>
-            <span class="text-sm">${title}</span>
-        </div>
-        <button class="icon-btn text-xs delete-conv" onclick="deleteConversation(event, ${id}, this)" style="opacity: 1; transition: opacity 0.2s;">
-            <i class="fa-solid fa-trash-can"></i>
-        </button>
+        <span>${title}</span>
+        <i class="fa-solid fa-arrow-right-long"></i>
     `;
     list.prepend(item);
 }
@@ -193,22 +243,18 @@ async function deleteConversation(event, id, element) {
     try {
         const response = await fetch(`/ai/delete/${id}/`, { method: 'POST' });
         if (response.ok) {
-            element.closest('.history-item').remove();
-            if (currentConversationId == id) {
-                resetChat();
-            }
+            element.closest('.history-item')?.remove();
+            if (currentConversationId == id) resetChat();
         }
     } catch (err) {
-        console.error('Failed to delete');
+        console.error('Failed to delete', err);
     }
 }
 
 function toggleChatDropdown() {
-    const menu = document.getElementById('chatDropdownMenu');
-    menu.classList.toggle('active');
+    document.getElementById('chatDropdownMenu')?.classList.toggle('active');
 }
 
-// close when clicking outside
 document.addEventListener('click', function (e) {
     const dropdown = document.querySelector('.chat-dropdown');
     if (dropdown && !dropdown.contains(e.target)) {
@@ -218,8 +264,5 @@ document.addEventListener('click', function (e) {
 
 function toggleChatMenu() {
     const menu = document.getElementById('chatSubmenu');
-    menu.classList.toggle('active');
-}
-if (!window.location.pathname.includes('/ai/chat')) {
-    localStorage.removeItem("chatStarted");
+    menu?.classList.toggle('active');
 }
