@@ -124,7 +124,6 @@
     display: flex;
     align-items: center;
     gap: 1rem;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
     transition: border-color 0.3s ease;
 }
 
@@ -139,6 +138,18 @@
     color: white;
     font-size: 1rem;
     outline: none;
+}
+
+.plane {
+    background: transparent;
+    border: none;
+    color: var(--accent-neon);
+    cursor: pointer;
+    font-size: 1.2rem;
+}
+
+.plane:hover {
+    opacity: 0.8;
 }
 
 .history-item {
@@ -678,8 +689,6 @@
     display: flex;
     justify-content: center;
     padding: 0.85rem 2rem 1.25rem;
-    background: linear-gradient(to top, rgba(10, 10, 10, 0.95) 70%, transparent);
-    border-top: 1px solid rgba(255, 255, 255, 0.04);
 }
 
 .chat-input-footer .premium-input-wrapper {
@@ -714,6 +723,37 @@
     opacity: 0.8;
 }
 
+.cancelbtn {
+    background: transparent;
+    border: none;
+    color: white;
+    padding: 0.5rem 1.2rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.cancelbtn:hover {
+    opacity: 0.8;
+}
+
+.deletebtn {
+    background: #c53737;
+    border: none;
+    color: white;
+    padding: 0.5rem 1.2rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: opacity 0.2s ease;
+}
+
+.deletebtn:hover {
+    opacity: 0.8;
+}
+
 /* Initial visibility states (JS overrides at runtime) */
 #landingScreen {
     display: flex;
@@ -732,7 +772,8 @@
     position: absolute;
     top: 1.5rem;
     right: 1.5rem;
-    display: flex; /* overridden by JS display:none/flex */
+    display: flex;
+    /* overridden by JS display:none/flex */
     gap: 0.5rem;
     z-index: 100;
 }
@@ -773,7 +814,8 @@
     background: rgba(0, 0, 0, 0.4);
     backdrop-filter: blur(8px);
     z-index: 9999;
-    display: none; /* hidden by default */
+    display: none;
+    /* hidden by default */
     align-items: center;
     justify-content: center;
     opacity: 0;
@@ -843,8 +885,14 @@
     padding: 0.5rem;
 }
 
-.modal-history-list::-webkit-scrollbar { width: 6px; }
-.modal-history-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 6px; }
+.modal-history-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.modal-history-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+}
 
 .modal-history-item {
     display: flex;
@@ -859,11 +907,27 @@
     background: rgba(255, 255, 255, 0.05);
 }
 
+.search-icon {
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: color 0.2s ease;
+    padding: 0.4rem;
+    border-radius: 8px;
+}
+
+.search-icon:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+    color: rgb(183, 183, 183);
+    transform: scale(1.05);
+
+}
+
+
 .history-item-btn {
     flex: 1;
     background: transparent;
     border: none;
-    color: rgba(255,255,255,0.85);
+    color: rgba(255, 255, 255, 0.85);
     padding: 0.75rem 0.5rem;
     text-align: left;
     font-size: 0.95rem;

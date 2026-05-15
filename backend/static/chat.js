@@ -61,6 +61,7 @@ function showChatScreen() {
     const msgContainer  = document.getElementById('messages');
     const chatInputWrapper = document.getElementById('chatInputWrapper');
     const chatTopActions = document.getElementById('chatTopActions');
+    const newChatActionBtn = document.getElementById('newChatActionBtn');
 
     if (landingScreen) landingScreen.style.display = 'none';
     if (msgContainer) {
@@ -69,6 +70,7 @@ function showChatScreen() {
     }
     if (chatInputWrapper) chatInputWrapper.style.display = 'flex';
     if (chatTopActions) chatTopActions.style.display = 'flex';
+    if (newChatActionBtn) newChatActionBtn.style.display = 'block';
 }
 
 function resetChat() {
@@ -81,7 +83,7 @@ function resetChat() {
     const messageInput     = document.getElementById('messageInput');
     const chatInput        = document.getElementById('chatMessageInput');
     const chatInputWrapper = document.getElementById('chatInputWrapper');
-    const chatTopActions   = document.getElementById('chatTopActions');
+    const newChatActionBtn = document.getElementById('newChatActionBtn');
 
     if (landingScreen)    landingScreen.style.display = 'flex';
     if (msgContainer) {
@@ -91,7 +93,11 @@ function resetChat() {
     if (messageInput)     messageInput.value = '';
     if (chatInput)        chatInput.value = '';
     if (chatInputWrapper) chatInputWrapper.style.display = 'none';
-    if (chatTopActions)   chatTopActions.style.display = 'none';
+    if (newChatActionBtn) newChatActionBtn.style.display = 'none';
+    
+    // Clear files
+    selectedFiles = [];
+    updateFilePreviews();
 }
 
 async function loadConversation(id, element) {
@@ -128,6 +134,11 @@ async function sendMessage() {
     const msgContainer = document.getElementById('messages');
     renderMessage(text, 'user');
     input.value = '';
+    
+    // Clear files after sending
+    selectedFiles = [];
+    updateFilePreviews();
+    
     scrollToBottom();
 
     const typingId = 'typing-' + Date.now();
@@ -163,7 +174,6 @@ async function sendMessage() {
             if (!currentConversationId && data.conversation_id) {
                 currentConversationId = data.conversation_id;
                 localStorage.setItem(CHAT_CONVERSATION_KEY, currentConversationId);
-                // addHistoryItem is handled by server render, but we could dynamically append
             }
             scrollToBottom();
         }
@@ -191,18 +201,38 @@ function scrollToBottom() {
     if (container) container.scrollTop = container.scrollHeight;
 }
 
-async function deleteConversation(event, id, element) {
-    event.stopPropagation();
-    if (!confirm('Delete this conversation?')) return;
+// Global vars for custom delete modal
+let conversationToDelete = null;
+let elementToDelete = null;
 
+function promptDeleteConversation(event, id, element, title) {
+    event.stopPropagation();
+    conversationToDelete = id;
+    elementToDelete = element;
+    
+    const titleEl = document.getElementById('deleteChatTitleName');
+    if (titleEl) {
+        titleEl.textContent = title ? `"${title}"` : "this chat";
+    }
+    
+    toggleChatModal('deleteConfirmModal');
+}
+
+async function confirmDeleteConversation() {
+    if (!conversationToDelete) return;
+    
     try {
-        const response = await fetch(`/ai/delete/${id}/`, { method: 'POST' });
+        const response = await fetch(`/ai/delete/${conversationToDelete}/`, { method: 'POST' });
         if (response.ok) {
-            element.closest('.modal-history-item')?.remove();
-            if (currentConversationId == id) resetChat();
+            elementToDelete.closest('.modal-history-item')?.remove();
+            if (currentConversationId == conversationToDelete) resetChat();
         }
     } catch (err) {
         console.error('Failed to delete', err);
+    } finally {
+        closeChatModalById('deleteConfirmModal');
+        conversationToDelete = null;
+        elementToDelete = null;
     }
 }
 
@@ -220,7 +250,14 @@ function toggleChatModal(modalId) {
     if (target) {
         target.classList.add('active');
         const input = target.querySelector('input');
-        if (input) input.focus();
+        if (input && input.style.display !== 'none') input.focus();
+    }
+}
+
+function closeChatModalById(modalId) {
+    const target = document.getElementById(modalId);
+    if (target) {
+        target.classList.remove('active');
     }
 }
 
@@ -228,6 +265,22 @@ function closeChatModal(event, modalId) {
     // If clicking directly on the overlay backdrop, close it
     if (event.target.id === modalId) {
         document.getElementById(modalId).classList.remove('active');
+    }
+}
+
+function toggleSearchInput() {
+    const searchInput = document.getElementById('historySearch');
+    const searchIcon = document.getElementById('searchToggleIcon');
+    
+    if (searchInput.style.display === 'none') {
+        searchInput.style.display = 'block';
+        searchIcon.style.color = 'var(--accent-neon)';
+        searchInput.focus();
+    } else {
+        searchInput.style.display = 'none';
+        searchIcon.style.color = 'var(--text-muted)';
+        searchInput.value = '';
+        filterChats(); // reset filter
     }
 }
 
@@ -242,5 +295,66 @@ function filterChats() {
         } else {
             item.style.display = 'none';
         }
+    });
+}
+
+// File Upload Handling
+let selectedFiles = [];
+
+function handleFileUpload(event) {
+    const files = Array.from(event.target.files);
+    if (!files.length) return;
+    
+    selectedFiles = [...selectedFiles, ...files];
+    updateFilePreviews();
+    
+    // Reset input so the same file can be selected again if needed
+    event.target.value = '';
+}
+
+function removeFile(index) {
+    selectedFiles.splice(index, 1);
+    updateFilePreviews();
+}
+
+function updateFilePreviews() {
+    const containers = [
+        document.getElementById('filePreviewContainerLanding'),
+        document.getElementById('filePreviewContainerChat')
+    ];
+    
+    containers.forEach(container => {
+        if (!container) return;
+        
+        if (selectedFiles.length === 0) {
+            container.style.display = 'none';
+            container.innerHTML = '';
+            return;
+        }
+        
+        container.style.display = 'flex';
+        container.innerHTML = '';
+        
+        selectedFiles.forEach((file, index) => {
+            const pill = document.createElement('div');
+            pill.style.cssText = 'background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); padding: 0.3rem 0.6rem; border-radius: 8px; display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: #ececec; flex-shrink: 0;';
+            
+            // Icon based on type
+            let icon = 'fa-file';
+            if (file.type.startsWith('image/')) icon = 'fa-image';
+            else if (file.type === 'application/pdf') icon = 'fa-file-pdf';
+            else if (file.type.includes('spreadsheet') || file.type.includes('csv')) icon = 'fa-file-excel';
+            
+            // Shorten name
+            let name = file.name;
+            if (name.length > 20) name = name.substring(0, 10) + '...' + name.substring(name.length - 7);
+            
+            pill.innerHTML = `
+                <i class="fa-solid ${icon}"></i>
+                <span>${name}</span>
+                <i class="fa-solid fa-xmark" style="cursor:pointer; color: #ff4a4a;" onclick="removeFile(${index})"></i>
+            `;
+            container.appendChild(pill);
+        });
     });
 }
