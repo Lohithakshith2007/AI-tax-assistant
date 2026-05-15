@@ -13,24 +13,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const chatInput = document.getElementById('chatMessageInput');
     const sendBtn = document.getElementById('sendBtn');
     const chatSendBtn = document.getElementById('chatSendBtn');
-    const chatDropdownToggle = document.getElementById('chatDropdownToggle');
-    const chatNewLinkBtn = document.getElementById('chatNewLinkBtn');
 
     const started = localStorage.getItem(CHAT_STARTED_KEY);
-    const submenu = document.getElementById('chatSubmenu');
-
-    if (submenu) {
-        if (started === 'true') {
-            submenu.style.display = 'flex';
-        } else {
-            submenu.style.display = 'none';
-        }
-    }
+    const onChatPage = window.location.pathname.includes('/ai/chat');
     const storedConversationId = localStorage.getItem(CHAT_CONVERSATION_KEY);
 
-    if (started === 'true' && storedConversationId) {
+    // Restore previous conversation on page load / refresh
+    if (onChatPage && started === 'true' && storedConversationId) {
         currentConversationId = storedConversationId;
         showChatScreen();
+        // Reload messages from backend
+        loadConversation(storedConversationId, null);
     }
 
     if (sendBtn) sendBtn.onclick = sendMessage;
@@ -50,19 +43,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-
-    if (chatDropdownToggle) {
-        chatDropdownToggle.addEventListener('click', toggleChatDropdown);
-    }
-
-    if (chatNewLinkBtn) {
-        chatNewLinkBtn.addEventListener('click', resetChat);
-    }
-
-    if (!window.location.pathname.includes('/ai/chat')) {
-        const submenu = document.getElementById('chatSubmenu');
-        if (submenu) submenu.style.display = 'none';
-    }
 });
 
 function getActiveInput() {
@@ -78,19 +58,17 @@ function getActiveInput() {
 
 function showChatScreen() {
     const landingScreen = document.getElementById('landingScreen');
-    const chatScreen = document.getElementById('chatScreen');
-    const msgContainer = document.getElementById('messages');
+    const msgContainer  = document.getElementById('messages');
     const chatInputWrapper = document.getElementById('chatInputWrapper');
-
-    console.log('Showing chat screen'); // Debug log
+    const chatTopActions = document.getElementById('chatTopActions');
 
     if (landingScreen) landingScreen.style.display = 'none';
-    if (chatScreen) {
-        chatScreen.style.display = 'flex';
-        console.log('Chat screen display set to flex'); // Debug log
+    if (msgContainer) {
+        msgContainer.style.display = 'flex';
+        msgContainer.style.flexDirection = 'column';
     }
-    if (msgContainer) msgContainer.style.display = 'flex';
     if (chatInputWrapper) chatInputWrapper.style.display = 'flex';
+    if (chatTopActions) chatTopActions.style.display = 'flex';
 }
 
 function resetChat() {
@@ -98,37 +76,33 @@ function resetChat() {
     localStorage.removeItem(CHAT_STARTED_KEY);
     localStorage.removeItem(CHAT_CONVERSATION_KEY);
 
-    const landingScreen = document.getElementById('landingScreen');
-    const chatScreen = document.getElementById('chatScreen');
-    const msgContainer = document.getElementById('messages');
-    const chatDropdownMenu = document.getElementById('chatDropdownMenu');
-    const messageInput = document.getElementById('messageInput');
-    const chatInput = document.getElementById('chatMessageInput');
+    const landingScreen    = document.getElementById('landingScreen');
+    const msgContainer     = document.getElementById('messages');
+    const messageInput     = document.getElementById('messageInput');
+    const chatInput        = document.getElementById('chatMessageInput');
     const chatInputWrapper = document.getElementById('chatInputWrapper');
+    const chatTopActions   = document.getElementById('chatTopActions');
 
-    if (landingScreen) landingScreen.style.display = 'flex';
-    if (chatScreen) chatScreen.style.display = 'none';
+    if (landingScreen)    landingScreen.style.display = 'flex';
     if (msgContainer) {
         msgContainer.style.display = 'none';
         msgContainer.innerHTML = '';
     }
-    if (chatDropdownMenu) chatDropdownMenu.classList.remove('active');
-    if (messageInput) messageInput.value = '';
-    if (chatInput) chatInput.value = '';
+    if (messageInput)     messageInput.value = '';
+    if (chatInput)        chatInput.value = '';
     if (chatInputWrapper) chatInputWrapper.style.display = 'none';
+    if (chatTopActions)   chatTopActions.style.display = 'none';
 }
 
 async function loadConversation(id, element) {
     currentConversationId = id;
+    localStorage.setItem(CHAT_STARTED_KEY, 'true');
     localStorage.setItem(CHAT_CONVERSATION_KEY, id);
-
-    document.querySelectorAll('.history-item').forEach(el => el.classList.remove('active'));
-    if (element) element.classList.add('active');
 
     showChatScreen();
 
     const msgContainer = document.getElementById('messages');
-    msgContainer.innerHTML = '<div class="text-center p-5"><i class="fa-solid fa-spinner fa-spin"></i> Loading conversation...</div>';
+    msgContainer.innerHTML = '<div style="text-align:center; padding:2rem; color: rgba(255,255,255,0.4);"><i class="fa-solid fa-spinner fa-spin"></i> Loading conversation...</div>';
 
     try {
         const response = await fetch(`/ai/history/${id}/`);
@@ -140,7 +114,7 @@ async function loadConversation(id, element) {
         });
         scrollToBottom();
     } catch (error) {
-        msgContainer.innerHTML = '<div class="text-danger p-4">Error loading history.</div>';
+        msgContainer.innerHTML = '<div style="padding:2rem; color: rgba(255,100,100,0.8);">Error loading history.</div>';
     }
 }
 
@@ -169,10 +143,6 @@ async function sendMessage() {
     scrollToBottom();
 
     localStorage.setItem(CHAT_STARTED_KEY, 'true');
-    const submenu = document.getElementById('chatSubmenu');
-    if (submenu) {
-        submenu.style.display = 'flex';
-    }
     if (currentConversationId) localStorage.setItem(CHAT_CONVERSATION_KEY, currentConversationId);
 
     try {
@@ -193,7 +163,7 @@ async function sendMessage() {
             if (!currentConversationId && data.conversation_id) {
                 currentConversationId = data.conversation_id;
                 localStorage.setItem(CHAT_CONVERSATION_KEY, currentConversationId);
-                addHistoryItem(data.conversation_id, data.conversation_title || text);
+                // addHistoryItem is handled by server render, but we could dynamically append
             }
             scrollToBottom();
         }
@@ -221,21 +191,6 @@ function scrollToBottom() {
     if (container) container.scrollTop = container.scrollHeight;
 }
 
-function addHistoryItem(id, title) {
-    const list = document.getElementById('chatHistoryList') || document.getElementById('historyList');
-    if (!list) return;
-
-    const item = document.createElement('button');
-    item.type = 'button';
-    item.className = 'history-item chat-history-item active';
-    item.onclick = function () { loadConversation(id, this); };
-    item.innerHTML = `
-        <span>${title}</span>
-        <i class="fa-solid fa-arrow-right-long"></i>
-    `;
-    list.prepend(item);
-}
-
 async function deleteConversation(event, id, element) {
     event.stopPropagation();
     if (!confirm('Delete this conversation?')) return;
@@ -243,7 +198,7 @@ async function deleteConversation(event, id, element) {
     try {
         const response = await fetch(`/ai/delete/${id}/`, { method: 'POST' });
         if (response.ok) {
-            element.closest('.history-item')?.remove();
+            element.closest('.modal-history-item')?.remove();
             if (currentConversationId == id) resetChat();
         }
     } catch (err) {
@@ -251,18 +206,41 @@ async function deleteConversation(event, id, element) {
     }
 }
 
-function toggleChatDropdown() {
-    document.getElementById('chatDropdownMenu')?.classList.toggle('active');
+function fillInput(text) {
+    const input = document.getElementById('messageInput') || document.getElementById('chatMessageInput');
+    if (input) {
+        input.value = text;
+        input.focus();
+    }
 }
 
-document.addEventListener('click', function (e) {
-    const dropdown = document.querySelector('.chat-dropdown');
-    if (dropdown && !dropdown.contains(e.target)) {
-        document.getElementById('chatDropdownMenu')?.classList.remove('active');
+// Top Right Actions Modals
+function toggleChatModal(modalId) {
+    const target = document.getElementById(modalId);
+    if (target) {
+        target.classList.add('active');
+        const input = target.querySelector('input');
+        if (input) input.focus();
     }
-});
+}
 
-function toggleChatMenu() {
-    const menu = document.getElementById('chatSubmenu');
-    menu?.classList.toggle('active');
+function closeChatModal(event, modalId) {
+    // If clicking directly on the overlay backdrop, close it
+    if (event.target.id === modalId) {
+        document.getElementById(modalId).classList.remove('active');
+    }
+}
+
+function filterChats() {
+    const query = document.getElementById('historySearch').value.toLowerCase();
+    const items = document.querySelectorAll('.modal-history-item');
+    
+    items.forEach(item => {
+        const title = item.querySelector('.history-item-btn').innerText.toLowerCase();
+        if (title.includes(query)) {
+            item.style.display = 'flex';
+        } else {
+            item.style.display = 'none';
+        }
+    });
 }

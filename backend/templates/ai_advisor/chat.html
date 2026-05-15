@@ -9,48 +9,54 @@
 {% endblock %}
 
 {% block content %}
-<div class="chat-workspace" style="display: flex; height: calc(100vh - 120px); overflow: hidden;">
-    <!-- MAIN WORKSPACE -->
-    <div class="chat-main" id="chatMain" style="flex: 1; display: flex; flex-direction: column; position: relative;">
+<div class="chat-workspace">
+    <div class="chat-main" id="chatMain">
 
-        <div class="chat-screen" id="chatScreen" style="display: none; flex: 1; flex-direction: column;">
-            <div class="chat-actions">
-                <div class="chat-dropdown">
-                    <button id="chatDropdownToggle" class="chat-dropdown-toggle" type="button">
-                        <i class="fa-solid fa-clock-rotate-left"></i>
-                        Recent chats
-                        <i class="fa-solid fa-chevron-down"></i>
-                    </button>
-                    <div class="chat-dropdown-menu" id="chatDropdownMenu">
-                        <div class="chat-history-list" id="chatHistoryList">
-                            {% if conversations %}
-                            {% for conv in conversations %}
-                            <button class="history-item chat-history-item" type="button"
-                                onclick="loadConversation({{ conv.id }}, this)">
-                                <span>{{ conv.title|truncatechars:30 }}</span>
-                                <i class="fa-solid fa-arrow-right-long"></i>
-                            </button>
-                            {% endfor %}
-                            {% else %}
-                            <div class="chat-history-empty">No recent chats yet.</div>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-
-                <button class="chat-new-link" id="chatNewLinkBtn" type="button" onclick="resetChat()">
-                    <i class="fa-solid fa-plus"></i> New chat
+        <!-- TOP RIGHT ACTIONS -->
+        <div class="chat-top-actions" id="chatTopActions" style="display: none;">
+            <div class="action-wrapper">
+                <button class="top-action-btn" title="New Chat" onclick="window.location.href='/ai/chat/?new=true'">
+                    <i class="fa-regular fa-pen-to-square"></i>
+                </button>
+            </div>
+            <div class="action-wrapper">
+                <button class="top-action-btn" title="Chat History" onclick="toggleChatModal('historyModal')">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
                 </button>
             </div>
         </div>
 
+        <!-- HISTORY MODAL (Centered Glassmorphism) -->
+        <div class="chat-modal-overlay" id="historyModal" onclick="closeChatModal(event, 'historyModal')">
+            <div class="chat-modal-box">
+                <div class="modal-header">
+                    <h3>Recent Chats</h3>
+                    <input type="text" id="historySearch" placeholder="Search chats..." class="modal-search-input" onkeyup="filterChats()">
+                </div>
+                <div class="modal-history-list" id="modalHistoryList">
+                    {% for conv in conversations %}
+                    <div class="modal-history-item">
+                        <button class="history-item-btn" onclick="loadConversation({{ conv.id }}, null); toggleChatModal('historyModal')">
+                            {{ conv.title }}
+                        </button>
+                        <button class="delete-chat-btn" onclick="deleteConversation(event, {{ conv.id }}, this)" title="Delete chat">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                    {% empty %}
+                    <div class="text-muted text-sm text-center py-4">No history yet</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- MESSAGES AREA (only this scrolls) -->
         <div class="messages-container" id="messages"></div>
 
-        <!-- Landing State -->
+        <!-- LANDING STATE (hidden once chat starts) -->
         <div class="landing-screen" id="landingScreen">
             <h1 class="gemini-title">Hi {{ request.user.username }},<br>Where should we start?</h1>
 
-            <!-- Input Area -->
             <div class="chat-input-area">
                 <div class="premium-input-wrapper">
                     <i class="fa-solid fa-plus text-muted" style="cursor: pointer;"></i>
@@ -79,43 +85,46 @@
                         class="fa-solid fa-file-invoice-dollar text-accent"></i> File ITR Help</div>
             </div>
 
-            <!-- Tagline Footer -->
             <div class="chat-footer-tagline">
                 Real-time AI explanations • Built for learning
             </div>
         </div>
 
-        <div class="chat-input-footer">
-            <div class="premium-input-wrapper" id="chatInputWrapper" style="display: none;">
+        <!-- FIXED BOTTOM INPUT (shown only in chat mode) -->
+        <div class="chat-input-footer" id="chatInputWrapper" style="display: none;">
+            <div class="premium-input-wrapper">
+                <i class="fa-solid fa-plus text-muted" style="cursor: pointer;"></i>
                 <input type="text" id="chatMessageInput" placeholder="Ask AI Tax Advisor..." autocomplete="off">
                 <button id="chatSendBtn" type="button" class="chat-send-button">
                     <i class="fa-solid fa-paper-plane"></i>
                 </button>
             </div>
         </div>
+
     </div>
 </div>
 {% endblock %}
 
 {% block extra_scripts %}
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="{% static 'chat.js' %}"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         const submenu = document.getElementById("chatSubmenu");
+        const historyList = document.getElementById("historyList");
+        const urlParams = new URLSearchParams(window.location.search);
 
-        // Only run on chat page
-        if (!window.location.pathname.includes('/ai/chat')) return;
+        // Show submenu on chat page
+        if (submenu) submenu.style.display = 'flex';
 
-        const started = localStorage.getItem("chatStarted");
-
-        if (submenu) {
-            if (started === "true") {
-                submenu.style.display = "flex";
-            } else {
-                submenu.style.display = "none";
-            }
+        // Handle ?new=true — clear state and show landing
+        if (urlParams.get('new') === 'true') {
+            localStorage.removeItem('chatStarted');
+            localStorage.removeItem('currentConversationId');
+            // Clean URL without reload
+            history.replaceState(null, '', '/ai/chat/');
         }
+
+        // Populate sidebar with server-side conversation history (Not needed in DOMContentLoaded as it is rendered directly in the modal now)
     });
 </script>
 {% endblock %}

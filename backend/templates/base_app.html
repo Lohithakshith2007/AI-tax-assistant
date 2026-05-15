@@ -47,21 +47,10 @@
                 <span class="nav-icon"><i class="fa-solid fa-clock-rotate-left"></i></span>
                 <span class="nav-label">History</span>
             </a>
-            <a href="{% url 'chat' %}" class="nav-item chat-expandable" onclick="handleChatClick(event)"> <span
-                    class="nav-icon"><i class="fa-solid fa-robot"></i></span>
+            <a href="{% url 'chat' %}" class="nav-item">
+                <span class="nav-icon"><i class="fa-solid fa-robot"></i></span>
                 <span class="nav-label">AI Chat</span>
-                <i class="fa-solid fa-chevron-down ml-auto"></i>
             </a>
-            <div class="chat-submenu" id="chatSubmenu" style="display: none;">
-                <button class="new-chat-btn-sidebar" onclick="resetChat()">
-                    <i class="fa-solid fa-plus"></i> New Chat
-                </button>
-
-                <div class="chat-history-sidebar" id="historyList">
-                    <!-- JS will fill -->
-                </div>
-
-            </div>
         </nav>
     </aside>
 
@@ -121,35 +110,8 @@
 
     </div>
 
-    <!-- Scripts -->
     <script src="{% static 'dashboard.js' %}"></script>
-    <script>
-        function toggleChatMenu() {
-            const menu = document.getElementById('chatSubmenu');
-            if (menu) {
-                menu.classList.toggle('active');
-            }
-        }
-
-        function resetChat() {
-            // redirect to chat page and start fresh
-            window.location.href = "/ai/chat/?new=true";
-        }
-        function handleChatClick(e) {
-    const isChatPage = window.location.pathname.includes('/ai/chat');
-    const started = localStorage.getItem('chatStarted');
-
-    // ✅ If NOT on chat page → go normally
-    if (!isChatPage) return;
-
-    // ✅ If on chat page BUT chat not started → do nothing
-    if (started !== 'true') return;
-
-    // ✅ If chat started → toggle dropdown
-    e.preventDefault();
-    toggleChatMenu();
-}
-    </script> {% block extra_scripts %}{% endblock %}
+    {% block extra_scripts %}{% endblock %}
 
 </body>
 
