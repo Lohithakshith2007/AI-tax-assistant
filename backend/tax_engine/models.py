@@ -9,6 +9,7 @@ class TaxCalculation(models.Model):
     deductions = models.FloatField()
     taxable_income = models.FloatField()
     estimated_tax = models.FloatField()
+    ai_explanation = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

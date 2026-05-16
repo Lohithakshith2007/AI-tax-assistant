@@ -174,6 +174,7 @@ async function sendMessage() {
             if (!currentConversationId && data.conversation_id) {
                 currentConversationId = data.conversation_id;
                 localStorage.setItem(CHAT_CONVERSATION_KEY, currentConversationId);
+                addHistoryItem(data.conversation_id, data.conversation_title || text);
             }
             scrollToBottom();
         }
@@ -181,6 +182,33 @@ async function sendMessage() {
         document.getElementById(typingId)?.remove();
         renderMessage("I'm sorry, I'm having trouble connecting right now. Please try again.", 'ai');
     }
+}
+
+function addHistoryItem(id, title) {
+    const list = document.getElementById('modalHistoryList');
+    if (!list) return;
+
+    // Remove the "No history yet" message if it exists
+    const noHistoryMsg = list.querySelector('.text-muted.text-center');
+    if (noHistoryMsg) noHistoryMsg.remove();
+
+    const itemDiv = document.createElement('div');
+    itemDiv.className = 'modal-history-item';
+    
+    // Safely escape title for the string literal
+    const safeTitle = title.replace(/'/g, "\\'");
+
+    itemDiv.innerHTML = `
+        <button class="history-item-btn" onclick="loadConversation(${id}, null); closeChatModalById('historyModal')">
+            ${title}
+        </button>
+        <button class="delete-chat-btn" onclick="promptDeleteConversation(event, ${id}, this, '${safeTitle}')" title="Delete chat">
+            <i class="fa-solid fa-trash"></i>
+        </button>
+    `;
+    
+    // Add to the top of the list
+    list.prepend(itemDiv);
 }
 
 function renderMessage(text, sender) {

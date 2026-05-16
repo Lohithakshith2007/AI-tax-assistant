@@ -29,11 +29,12 @@
                         <th>Deductions</th>
                         <th>Taxable Income</th>
                         <th>Estimated Tax</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for calc in calculations %}
-                    <tr>
+                    <tr style="cursor: pointer;" onclick="viewAIExplanation('{{ calc.id }}')">
                         <td class="text-muted text-sm">{{ calc.created_at|date:"M d, Y H:i" }}</td>
                         <td>
                             <span class="badge"
@@ -53,6 +54,22 @@
                         <td class="text-accent font-weight-bold">
                             {{ calc.country|currency_symbol }}{{ calc.estimated_tax|floatformat:0|intcomma }}
                         </td>
+                        <td>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button class="btn-view-advice" style="background: transparent; border: 1px solid rgba(255,255,255,0.1); color: var(--accent-neon); padding: 4px 10px; border-radius: 6px; font-size: 0.75rem;">
+                                    <i class="fa-solid fa-eye"></i> View Advice
+                                </button>
+                                <button class="btn-delete-calc" onclick="confirmDeleteCalc(event, '{{ calc.id }}', this)" 
+                                    style="background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 4px 8px; font-size: 0.9rem; transition: color 0.2s ease;" 
+                                    onmouseover="this.style.color='#ef4444'" 
+                                    onmouseout="this.style.color='var(--text-muted)'"
+                                    title="Delete calculation">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </div>
+                            <!-- Hidden Data -->
+                            <div id="ai-data-{{ calc.id }}" style="display: none;">{{ calc.ai_explanation|default:"No advice stored for this calculation." }}</div>
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -60,13 +77,154 @@
         </div>
         {% else %}
         <div class="empty-state p-5 text-center">
-            <div class="empty-icon text-muted mb-3" style="font-size: 3rem;"><i class="fa-solid fa-folder-open"></i>
+            <div class="empty-icon text-muted mb-3">
+                <i class="fa-solid fa-folder-open"></i>
             </div>
-            <h4>No history found</h4>
-            <p class="text-muted">You haven't made any tax calculations yet.</p>
-            <a href="{% url 'calculator' %}" class="btn-primary mt-3" style="display: inline-flex;">Go to Calculator</a>
+            <div style="display: flex;flex-direction: column;justify-content: center;align-items: center;">
+                <h4>No history found</h4>
+                <p class="text-muted">You haven't made any tax calculations yet.</p>
+                <a href="{% url 'calculator' %}" class="btn-primary mt-3" style="display: inline-flex;margin:2rem 0">Go to
+                    Calculator</a>
+            </div>
         </div>
         {% endif %}
     </div>
 </div>
+
+<!-- DELETE CONFIRMATION MODAL -->
+<div class="history-modal-overlay" id="deleteCalcModal" onclick="closeDeleteCalcModal(event)">
+    <div class="history-modal-box" style="max-width: 400px;">
+        <div class="modal-header-modern" style="border-bottom: none; padding-bottom: 0;">
+            <div class="header-left">
+                <i class="fa-solid fa-circle-exclamation text-danger" style="font-size: 1.5rem;"></i>
+                <h3 style="margin-left: 0.5rem;">Confirm Delete</h3>
+            </div>
+        </div>
+        <div class="modal-body-modern" style="padding-top: 1rem;">
+            <p>Are you sure you want to delete this calculation record? This action cannot be undone.</p>
+        </div>
+        <div class="modal-footer-modern" style="border-top: none; gap: 1rem;">
+            <button class="btn-close-footer" onclick="document.getElementById('deleteCalcModal').classList.remove('active')">Cancel</button>
+            <button class="btn-primary" id="confirmDeleteBtn" style="background: #ef4444; border: none;">Delete Now</button>
+        </div>
+    </div>
+</div>
+
+<!-- AI EXPLANATION MODAL (Glassmorphic) -->
+<div class="history-modal-overlay" id="adviceModal" onclick="closeAdviceModal(event)">
+    <div class="history-modal-box">
+        <div class="modal-header-modern">
+            <div class="header-left">
+                <i class="fa-solid fa-robot text-accent"></i>
+                <h3>AI Tax Advisor Advice</h3>
+            </div>
+            <button class="close-btn" onclick="document.getElementById('adviceModal').classList.remove('active')">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="modal-body-modern" id="adviceContent">
+            <!-- AI Reply goes here -->
+        </div>
+        <div class="modal-footer-modern">
+            <button class="btn-close-footer" onclick="document.getElementById('adviceModal').classList.remove('active')">Close</button>
+        </div>
+    </div>
+</div>
+
+<style>
+.history-modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);
+    z-index: 10000; display: none; align-items: center; justify-content: center;
+    opacity: 0; transition: opacity 0.3s ease;
+}
+.history-modal-overlay.active { display: flex; opacity: 1; }
+
+.history-modal-box {
+    background: #111; border: 1px solid rgba(255,255,255,0.1); border-radius: 16px;
+    width: 90%; max-width: 650px; max-height: 80vh; display: flex; flex-direction: column;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.8);
+    transform: translateY(30px) scale(0.98); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.history-modal-overlay.active .history-modal-box { transform: translateY(0) scale(1); }
+
+.modal-header-modern {
+    padding: 1.25rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.05);
+    display: flex; justify-content: space-between; align-items: center;
+}
+.header-left { display: flex; align-items: center; gap: 1rem; }
+.header-left h3 { margin: 0; font-size: 1.1rem; color: #fff; }
+.close-btn { background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.2rem; }
+
+.modal-body-modern {
+    padding: 1.5rem; overflow-y: auto; color: #ececec; line-height: 1.6; font-size: 0.95rem;
+}
+.modal-body-modern h1, .modal-body-modern h2, .modal-body-modern h3 { color: var(--accent-neon); margin-top: 1.2rem; }
+.modal-body-modern hr { border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 1.5rem 0; }
+
+.modal-footer-modern { padding: 1rem 1.5rem; border-top: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: flex-end; }
+.btn-close-footer { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 0.6rem 1.5rem; border-radius: 8px; cursor: pointer; transition: opacity 0.2s ease;}
+.btn-close-footer:hover { opacity: 0.85; }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script>
+function viewAIExplanation(calcId) {
+    const rawContent = document.getElementById('ai-data-' + calcId).innerText;
+    const adviceContent = document.getElementById('adviceContent');
+    
+    // Parse markdown
+    adviceContent.innerHTML = marked.parse(rawContent);
+    
+    // Open modal
+    document.getElementById('adviceModal').classList.add('active');
+}
+
+let calcToDelete = null;
+let rowToDelete = null;
+
+function confirmDeleteCalc(e, calcId, btn) {
+    e.stopPropagation();
+    calcToDelete = calcId;
+    rowToDelete = btn.closest('tr');
+    document.getElementById('deleteCalcModal').classList.add('active');
+}
+
+document.getElementById('confirmDeleteBtn').onclick = async function() {
+    if (!calcToDelete) return;
+    
+    try {
+        const response = await fetch(`/calculate/delete/${calcToDelete}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        });
+        const data = await response.json();
+        if (data.status === 'success') {
+            rowToDelete.style.opacity = '0';
+            rowToDelete.style.transform = 'translateX(20px)';
+            setTimeout(() => rowToDelete.remove(), 300);
+            document.getElementById('deleteCalcModal').classList.remove('active');
+            showToast('Calculation deleted successfully.');
+        } else {
+            showToast(data.error || 'Failed to delete.', 'error');
+        }
+    } catch (err) {
+        showToast('Network error while deleting.', 'error');
+    }
+};
+
+function closeDeleteCalcModal(e) {
+    if (e.target.id === 'deleteCalcModal') {
+        document.getElementById('deleteCalcModal').classList.remove('active');
+    }
+}
+
+function closeAdviceModal(e) {
+    if (e.target.id === 'adviceModal') {
+        document.getElementById('adviceModal').classList.remove('active');
+    }
+}
+</script>
 {% endblock %}

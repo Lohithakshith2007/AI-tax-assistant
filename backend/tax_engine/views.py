@@ -55,7 +55,8 @@ def calculate_tax(request):
                     income=income,
                     deductions=deductions,
                     taxable_income=taxable_income,
-                    estimated_tax=tax
+                    estimated_tax=tax,
+                    ai_explanation=ai_response
                 )
 
             return JsonResponse({
@@ -69,6 +70,20 @@ def calculate_tax(request):
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=500)
         
+
+@csrf_exempt
+def delete_calculation(request, calc_id):
+    if request.method == "POST":
+        try:
+            calculation = TaxCalculation.objects.get(id=calc_id, user=request.user)
+            calculation.delete()
+            return JsonResponse({"status": "success"})
+        except TaxCalculation.DoesNotExist:
+            return JsonResponse({"error": "Calculation not found"}, status=404)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+    return JsonResponse({"error": "Method not allowed"}, status=405)
+
 
 def landing(request):
     return render(request, "tax_engine/landing.html")

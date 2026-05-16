@@ -6,4 +6,5 @@ urlpatterns = [
     path("features/", views.features, name="features"),
     path("about/", views.about, name="about"),
     path("calculate/", views.calculate_tax, name="calculate"),
+    path("calculate/delete/<int:calc_id>/", views.delete_calculation, name="delete_calculation"),
 ]   

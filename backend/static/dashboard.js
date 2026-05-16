@@ -213,11 +213,41 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    /* --- TAX CALCULATOR --- */
     const taxForm = document.getElementById('taxCalcForm');
     const calcBtn = document.getElementById('calcBtn');
+    const LAST_CALC_KEY = 'ai_tax_last_calculation';
+
+    // Helper to restore last calculation on load
+    function restoreLastCalculation() {
+        const saved = localStorage.getItem(LAST_CALC_KEY);
+        if (saved && taxForm) {
+            const { inputs, results } = JSON.parse(saved);
+            
+            // Populate form
+            Object.keys(inputs).forEach(key => {
+                const input = taxForm.querySelector(`[name="${key}"]`);
+                if (input) {
+                    input.value = inputs[key];
+                    // Trigger change for custom selects
+                    if (input.tagName === 'SELECT') {
+                        const trigger = input.parentElement.querySelector('.custom-select-trigger span');
+                        if (trigger) trigger.textContent = input.options[input.selectedIndex].text;
+                    }
+                }
+            });
+            
+            // Update currency symbols based on restored country
+            updateCurrencySymbols(inputs.country);
+
+            // Display results
+            displayResults(results, inputs.country);
+        }
+    }
 
     if (taxForm) {
+        // Run restoration
+        restoreLastCalculation();
+
         taxForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const globalLoading = document.getElementById('globalLoading');
@@ -225,7 +255,7 @@ document.addEventListener("DOMContentLoaded", () => {
             calcBtn.disabled = true;
 
             const formData = new FormData(taxForm);
-            const data = Object.fromEntries(formData.entries());
+            const inputs = Object.fromEntries(formData.entries());
 
             try {
                 const response = await fetch('/calculate/', {
@@ -235,17 +265,21 @@ document.addEventListener("DOMContentLoaded", () => {
                         'X-CSRFToken': getCookie('csrftoken')
                     },
                     body: JSON.stringify({
-                        country: data.country,
-                        income: parseFloat(data.income) || 0,
-                        deductions: parseFloat(data.deductions) || 0,
-                        age: parseInt(data.age) || 0
+                        country: inputs.country,
+                        income: parseFloat(inputs.income) || 0,
+                        deductions: parseFloat(inputs.deductions) || 0,
+                        age: parseInt(inputs.age) || 0
                     })
                 });
                 
-                const result = await response.json();
+                const results = await response.json();
+                
+                // Save to localStorage for persistence
+                localStorage.setItem(LAST_CALC_KEY, JSON.stringify({ inputs, results }));
+
                 setTimeout(() => {
                     if (globalLoading) globalLoading.style.display = 'none';
-                    displayResults(result, data.country);
+                    displayResults(results, inputs.country);
                 }, 800);
             } catch (error) {
                 if (globalLoading) globalLoading.style.display = 'none';
