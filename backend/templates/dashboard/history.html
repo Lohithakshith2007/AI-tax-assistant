@@ -1,5 +1,5 @@
 {% extends 'base_app.html' %}
-{% load tax_tags humanize %}
+{% load tax_tags humanize tz %}
 
 {% block title %}History - AI Tax Assistant{% endblock %}
 {% block page_title %}Calculation History{% endblock %}
@@ -35,7 +35,7 @@
                 <tbody>
                     {% for calc in calculations %}
                     <tr style="cursor: pointer;" onclick="viewAIExplanation('{{ calc.id }}')">
-                        <td class="text-muted text-sm">{{ calc.created_at|date:"M d, Y H:i" }}</td>
+                        <td class="text-muted text-sm timestamp-cell" data-utc="{{ calc.created_at|date:'c' }}">{{ calc.created_at|localtime|date:"M d, Y H:i" }}</td>
                         <td>
                             <span class="badge"
                                 style="background: rgba(199,240,0,0.1); color: var(--accent-neon); border: 1px solid rgba(199,240,0,0.2);">
@@ -226,5 +226,28 @@ function closeAdviceModal(e) {
         document.getElementById('adviceModal').classList.remove('active');
     }
 }
+
+// Convert UTC timestamps to user's local timezone
+document.addEventListener('DOMContentLoaded', function() {
+    const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    
+    document.querySelectorAll('.timestamp-cell').forEach(cell => {
+        const utcString = cell.dataset.utc;
+        if (!utcString) return;
+        
+        const utcDate = new Date(utcString);
+        const localTime = utcDate.toLocaleString('en-US', { 
+            year: 'numeric',
+            month: 'short',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false,
+            timeZone: userTimezone
+        });
+        
+        cell.textContent = localTime;
+    });
+});
 </script>
 {% endblock %}

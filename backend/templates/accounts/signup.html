@@ -48,7 +48,12 @@
 
     <div class="signup-right">
       <form method="POST" action="{% url 'signup' %}">
-        {% csrf_token %} <label for="fullname">Full Name</label>
+        {% csrf_token %}
+        
+        <!-- Hidden timezone field -->
+        <input type="hidden" name="timezone" id="timezone" value="UTC" />
+        
+        <label for="fullname">Full Name</label>
         <input type="text" name="username" id="username" placeholder="patrick james" required />
 
         <label for="email">Email</label>
@@ -68,6 +73,14 @@
       </form>
     </div>
   </main>
+
+  <script>
+    // Detect and store user's timezone on signup
+    document.addEventListener('DOMContentLoaded', function() {
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      document.getElementById('timezone').value = timezone;
+    });
+  </script>
 
 </body>
 

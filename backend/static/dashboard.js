@@ -22,15 +22,15 @@ function showToast(message, type = 'success') {
 }
 
 /* --- REFRESH INSIGHTS HANDLER --- */
-window.refreshInsights = function(btn) {
+window.refreshInsights = function (btn) {
     if (btn) {
         const icon = btn.querySelector('i');
         if (icon) icon.classList.add('fa-spin');
         btn.disabled = true;
     }
-    
+
     showToast("AI is analyzing your latest data...", "success");
-    
+
     setTimeout(() => {
         if (btn) {
             const icon = btn.querySelector('i');
@@ -135,7 +135,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     optionsList.querySelectorAll('.custom-option').forEach(el => el.classList.remove('selected'));
                     oDiv.classList.add('selected');
                     container.classList.remove('active');
-                    
+
                     // Trigger native change event
                     select.dispatchEvent(new Event('change'));
                 });
@@ -186,7 +186,7 @@ document.addEventListener("DOMContentLoaded", () => {
     window.refreshInsights = async function (btn) {
         const aiBox = btn.closest('.card').querySelector('.ai-box');
         const content = aiBox.querySelector('#aiInsightText');
-        
+
         btn.disabled = true;
         btn.innerHTML = '<i class="fa-solid fa-rotate fa-spin"></i> Analyzing Profile...';
         aiBox.classList.add('shimmer');
@@ -222,7 +222,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const saved = localStorage.getItem(LAST_CALC_KEY);
         if (saved && taxForm) {
             const { inputs, results } = JSON.parse(saved);
-            
+
             // Populate form
             Object.keys(inputs).forEach(key => {
                 const input = taxForm.querySelector(`[name="${key}"]`);
@@ -235,7 +235,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     }
                 }
             });
-            
+
             // Update currency symbols based on restored country
             updateCurrencySymbols(inputs.country);
 
@@ -271,9 +271,9 @@ document.addEventListener("DOMContentLoaded", () => {
                         age: parseInt(inputs.age) || 0
                     })
                 });
-                
+
                 const results = await response.json();
-                
+
                 // Save to localStorage for persistence
                 localStorage.setItem(LAST_CALC_KEY, JSON.stringify({ inputs, results }));
 

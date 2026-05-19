@@ -13,6 +13,7 @@ def signup(request):
         email = request.POST.get("email")
         password = request.POST.get("password")
         confirm_password = request.POST.get("confirm_password")
+        timezone = request.POST.get("timezone", "UTC")
 
         if password != confirm_password:
             messages.error(request, "Passwords do not match")
@@ -27,6 +28,10 @@ def signup(request):
             email=email,
             password=password
         )
+
+        # Update profile with timezone
+        user.profile.timezone = timezone
+        user.profile.save()
 
         messages.success(request, "Account created successfully!")
         return redirect("signin")
