@@ -55,7 +55,7 @@
         <div class="card card-glow-hover">
             <div class="card-header flex-between">
                 <h3>AI Insights</h3>
-                <button class="btn-outline" style="padding: 0.4rem 0.6rem; font-size: 0.65rem;"
+                <button class="btn-primary" style="padding: 0.4rem 0.6rem; font-size: 0.65rem;"
                     onclick="refreshInsights(this)">
                     <i class="fa-solid fa-bolt"></i> Refresh Insight
                 </button>
@@ -163,31 +163,59 @@
                     <i class="fa-solid fa-user-gear"></i> Edit Profile
                 </button>
             </div>
-            <div class="card-body">
-                <form method="POST" action="{% url 'profile' %}" class="modern-form">
+            <div class="card-body password-card-body">
+                <p class="help-text" style="margin-bottom: 1rem; color: var(--text-muted); font-size: 0.9rem;">Enter your current password, choose a new one, and confirm it to keep your account secure.</p>
+                <form id="changePasswordForm" method="POST" action="{% url 'profile_change_password' %}" class="modern-form" onsubmit="return submitChangePassword(event)">
                     {% csrf_token %}
                     <input type="hidden" name="action" value="update_password">
                     <div class="form-row">
-                        <div class="form-group">
+                        <div class="form-group full-width">
                             <label for="old_password">Current Password</label>
                             <div class="password-wrapper">
-                                <input type="password" id="old_password" name="old_password" required placeholder="••••••••">
+                                <input type="password" id="old_password" name="old_password" required placeholder="••••••••" autocomplete="current-password">
                                 <i class="fa-solid fa-eye pass-toggle" onclick="togglePassword('old_password', this)"></i>
                             </div>
                         </div>
+                    </div>
+                    <div class="form-row">
                         <div class="form-group">
                             <label for="new_password1">New Password</label>
                             <div class="password-wrapper">
-                                <input type="password" id="new_password1" name="new_password1" required placeholder="New Password" oninput="checkPasswordStrength(this.value, 'strengthMeter')">
+                                <input type="password" id="new_password1" name="new_password1" required autocomplete="new-password" placeholder="New Password" oninput="checkPasswordStrength(this.value, 'strengthMeter')">
                                 <i class="fa-solid fa-eye pass-toggle" onclick="togglePassword('new_password1', this)"></i>
                             </div>
-                            <div id="strengthMeter" class="strength-meter">
-                                <div class="strength-bar"></div>
+                            <div class="strength-summary">
+                                <span class="strength-label" id="strengthLabel"></span>
+                                <div id="strengthMeter" class="strength-meter">
+                                    <div class="strength-bar"></div>
+                                </div>
                             </div>
                         </div>
+                        <div class="form-group">
+                            <label for="new_password2">Confirm New Password</label>
+                            <div class="password-wrapper">
+                                <input type="password" id="new_password2" name="new_password2" required autocomplete="new-password" placeholder="Confirm New Password" oninput="validatePasswordMatch()">
+                                <i class="fa-solid fa-eye pass-toggle" onclick="togglePassword('new_password2', this)"></i>
+                            </div>
+                            <div class="password-match-text" id="passwordMatchText">Passwords must match.</div>
+                        </div>
                     </div>
-                    <div style="display: flex; justify-content: flex-end;">
-                        <button type="submit" class="btn-outline mt-2"><i class="fa-solid fa-shield-halved"></i> Update Password</button>
+                    <div class="password-checklist-wrapper">
+                        <div class="password-checklist-title">Password must contain</div>
+                        <ul class="password-rule-list">
+                            <li id="rule-length" class="password-rule-item">At least 8 characters</li>
+                            <li id="rule-uppercase" class="password-rule-item">At least one uppercase letter</li>
+                            <li id="rule-lowercase" class="password-rule-item">At least one lowercase letter</li>
+                            <li id="rule-number" class="password-rule-item">At least one number</li>
+                            <li id="rule-special" class="password-rule-item">At least one special character</li>
+                        </ul>
+                    </div>
+                    <div id="passwordValidationMessage" class="password-validation-message"></div>
+                    <div class="form-actions">
+                        <button id="passwordSubmitBtn" type="submit" class="btn-primary" disabled>
+                            <span class="btn-text">Update Password</span>
+                            <span class="btn-spinner" aria-hidden="true"></span>
+                        </button>
                     </div>
                 </form>
             </div>

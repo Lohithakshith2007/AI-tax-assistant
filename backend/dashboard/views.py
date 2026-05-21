@@ -2,8 +2,10 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
-from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth.password_validation import validate_password
 from django.http import JsonResponse
+from django.core.exceptions import ValidationError
+from django.views.decorators.http import require_POST
 from tax_engine.models import TaxCalculation
 from accounts.models import Profile
 import os
@@ -71,16 +73,50 @@ def profile_view(request):
             return redirect("profile")
             
         elif action == "update_password":
-            form = PasswordChangeForm(request.user, request.POST)
-            if form.is_valid():
-                user = form.save()
-                update_session_auth_hash(request, user)
-                messages.success(request, 'Your password was successfully updated!')
-                return redirect('profile')
-            else:
-                for error in list(form.errors.values()):
+            current_password = request.POST.get('old_password', '')
+            new_password1 = request.POST.get('new_password1', '')
+            new_password2 = request.POST.get('new_password2', '')
+            user = request.user
+            errors = []
+
+            if not user.check_password(current_password):
+                errors.append('Current password is incorrect.')
+
+            if new_password1 != new_password2:
+                errors.append('New password and confirmation do not match.')
+
+            if user.check_password(new_password1):
+                errors.append('The new password must be different from your current password.')
+
+            if not errors:
+                try:
+                    validate_password(new_password1, user=user)
+                except ValidationError as e:
+                    errors.extend(e.messages)
+
+            if errors:
+                if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                    return JsonResponse({
+                        'success': False,
+                        'errors': errors,
+                    }, status=400)
+
+                for error in errors:
                     messages.error(request, error)
                 return redirect('profile')
+
+            user.set_password(new_password1)
+            user.save()
+            update_session_auth_hash(request, user)
+
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Your password was successfully updated!',
+                })
+
+            messages.success(request, 'Your password was successfully updated!')
+            return redirect('profile')
 
     # Stats for the new profile dashboard
     total_tax = sum(calc.estimated_tax for calc in calculations)
@@ -143,6 +179,46 @@ def profile_view(request):
     }
 
     return render(request, 'dashboard/profile.html', context)
+
+@login_required
+@require_POST
+def profile_change_password(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({'success': False, 'errors': ['Authentication required.']}, status=403)
+
+    current_password = request.POST.get('old_password', '')
+    new_password1 = request.POST.get('new_password1', '')
+    new_password2 = request.POST.get('new_password2', '')
+    user = request.user
+    errors = []
+
+    if not current_password:
+        errors.append('Current password is required.')
+    elif not user.check_password(current_password):
+        errors.append('Current password is incorrect.')
+
+    if not new_password1 or not new_password2:
+        errors.append('Both new password fields are required.')
+    elif new_password1 != new_password2:
+        errors.append('New password and confirmation do not match.')
+
+    if new_password1 and user.check_password(new_password1):
+        errors.append('The new password must be different from the current password.')
+
+    if not errors:
+        try:
+            validate_password(new_password1, user=user)
+        except ValidationError as e:
+            errors.extend(e.messages)
+
+    if errors:
+        return JsonResponse({'success': False, 'errors': errors}, status=400)
+
+    user.set_password(new_password1)
+    user.save()
+    update_session_auth_hash(request, user)
+
+    return JsonResponse({'success': True, 'message': 'Your password was successfully updated!'})
 
 @login_required
 def settings_view(request):

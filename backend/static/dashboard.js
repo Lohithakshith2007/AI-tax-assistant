@@ -314,21 +314,182 @@ document.addEventListener("DOMContentLoaded", () => {
     /* --- PASSWORD TOOLS --- */
     window.togglePassword = function (inputId, icon) {
         const input = document.getElementById(inputId);
-        input.type = input.type === "password" ? "text" : "password";
+        input.type = input.type === 'password' ? 'text' : 'password';
         icon.classList.toggle('fa-eye');
         icon.classList.toggle('fa-eye-slash');
     }
 
+    const passwordRules = {
+        length: pass => pass.length >= 8,
+        uppercase: pass => /[A-Z]/.test(pass),
+        lowercase: pass => /[a-z]/.test(pass),
+        number: pass => /[0-9]/.test(pass),
+        special: pass => /[^A-Za-z0-9]/.test(pass),
+    };
+
     window.checkPasswordStrength = function (pass, meterId) {
         const bar = document.getElementById(meterId).querySelector('.strength-bar');
-        let strength = 0;
-        if (pass.length > 5) strength++;
-        if (pass.length > 10) strength++;
-        if (/[A-Z]/.test(pass)) strength++;
-        if (/[0-9]/.test(pass)) strength++;
-        if (/[^A-Za-z0-9]/.test(pass)) strength++;
+        const strengthLabel = document.getElementById('strengthLabel');
+        const confirmValue = document.getElementById('new_password2').value;
+        const matchText = document.getElementById('passwordMatchText');
+        const validationMessage = document.getElementById('passwordValidationMessage');
+        const newPasswordInput = document.getElementById('new_password1');
+        const confirmPasswordInput = document.getElementById('new_password2');
 
-        bar.className = 'strength-bar ' + (strength < 2 ? 'weak' : strength < 4 ? 'medium' : 'strong');
+        const ruleStatus = Object.entries(passwordRules).reduce((acc, [key, test]) => {
+            const valid = test(pass);
+            const element = document.getElementById(`rule-${key}`);
+            if (element) element.classList.toggle('active', valid);
+            acc[key] = valid;
+            return acc;
+        }, {});
+
+        const completedRules = Object.values(ruleStatus).filter(Boolean).length;
+        const hasMatch = pass === confirmValue && pass.length > 0;
+
+        if (confirmValue.length) {
+            matchText.classList.toggle('valid', hasMatch);
+            matchText.textContent = hasMatch ? 'Passwords match.' : 'Passwords do not match.';
+            confirmPasswordInput.classList.toggle('valid-input', hasMatch);
+            confirmPasswordInput.classList.toggle('invalid-input', !hasMatch);
+        } else {
+            matchText.classList.remove('valid');
+            matchText.textContent = 'Passwords must match.';
+            confirmPasswordInput.classList.remove('valid-input', 'invalid-input');
+        }
+
+        if (pass.length) {
+            newPasswordInput.classList.toggle('valid-input', completedRules === Object.keys(passwordRules).length);
+            newPasswordInput.classList.toggle('invalid-input', completedRules < Object.keys(passwordRules).length);
+        } else {
+            newPasswordInput.classList.remove('valid-input', 'invalid-input');
+        }
+
+        let strengthState = 'weak';
+        let label = 'Weak';
+        if (completedRules === Object.keys(passwordRules).length) {
+            strengthState = 'very-strong';
+            label = 'Very Strong';
+        } else if (completedRules >= 4) {
+            strengthState = 'strong';
+            label = 'Strong';
+        } else if (completedRules >= 3) {
+            strengthState = 'medium';
+            label = 'Medium';
+        }
+
+        if (!pass.length) {
+            bar.className = 'strength-bar';
+        } else {
+            bar.className = `strength-bar ${strengthState}`;
+        }
+        strengthLabel.textContent = pass.length ? label : '';
+        updatePasswordSubmitState();
+        if (validationMessage) validationMessage.style.display = 'none';
+    }
+
+    window.validatePasswordMatch = function () {
+        const password = document.getElementById('new_password1').value;
+        window.checkPasswordStrength(password, 'strengthMeter');
+    }
+
+    window.updatePasswordSubmitState = function () {
+        const newPassword = document.getElementById('new_password1').value;
+        const confirmPassword = document.getElementById('new_password2').value;
+        const submitButton = document.getElementById('passwordSubmitBtn');
+
+        const validRules = Object.values(passwordRules).every(test => test(newPassword));
+        const passwordsMatch = newPassword && newPassword === confirmPassword;
+        submitButton.disabled = !(validRules && passwordsMatch);
+        return !submitButton.disabled;
+    }
+
+    function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+        return '';
+    }
+
+    let passwordAlertTimer = null;
+
+    window.submitChangePassword = async function (event) {
+        event.preventDefault();
+        const submitButton = document.getElementById('passwordSubmitBtn');
+        const validationMessage = document.getElementById('passwordValidationMessage');
+        const form = document.getElementById('changePasswordForm');
+
+        if (!window.updatePasswordSubmitState()) {
+            validationMessage.innerHTML = '<p>Complete all password rules and make sure passwords match before submitting.</p>';
+            validationMessage.style.display = 'block';
+            clearTimeout(passwordAlertTimer);
+            passwordAlertTimer = setTimeout(() => {
+                validationMessage.style.display = 'none';
+            }, 6000);
+            showToast('Fix the password rules before submitting.', 'error');
+            return false;
+        }
+
+        const formData = new FormData(form);
+        submitButton.classList.add('loading');
+        submitButton.disabled = true;
+
+        try {
+            const endpoint = form.getAttribute('action') || window.location.pathname;
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': getCookie('csrftoken'),
+                },
+                body: formData,
+            });
+
+            const data = await response.json();
+            if (!response.ok || !data.success) {
+                const errors = data.errors || [data.message || 'Unable to update password.'];
+                validationMessage.innerHTML = errors.map(error => `<p>${error}</p>`).join('');
+                validationMessage.style.display = 'block';
+                clearTimeout(passwordAlertTimer);
+                passwordAlertTimer = setTimeout(() => {
+                    validationMessage.style.display = 'none';
+                }, 6000);
+                showToast('Unable to update password.', 'error');
+                return false;
+            }
+
+            validationMessage.style.display = 'none';
+            submitButton.classList.remove('loading');
+            showToast(data.message || 'Password updated successfully.', 'success');
+            form.reset();
+            document.getElementById('strengthMeter').querySelector('.strength-bar').className = 'strength-bar';
+            document.getElementById('strengthLabel').textContent = '';
+            document.getElementById('passwordMatchText').classList.remove('valid');
+            document.getElementById('passwordMatchText').textContent = 'Passwords must match.';
+            document.querySelectorAll('.password-rule-item').forEach(item => item.classList.remove('active'));
+            document.getElementById('new_password1').classList.remove('valid-input', 'invalid-input');
+            document.getElementById('new_password2').classList.remove('valid-input', 'invalid-input');
+            clearTimeout(passwordAlertTimer);
+            passwordAlertTimer = setTimeout(() => {
+                validationMessage.style.display = 'none';
+            }, 6000);
+            setTimeout(() => {
+                submitButton.disabled = true;
+            }, 100);
+            return true;
+        } catch (error) {
+            validationMessage.innerHTML = '<p>Unable to communicate with the server. Try again.</p>';
+            validationMessage.style.display = 'block';
+            clearTimeout(passwordAlertTimer);
+            passwordAlertTimer = setTimeout(() => {
+                validationMessage.style.display = 'none';
+            }, 6000);
+            showToast('Network error while updating password.', 'error');
+            return false;
+        } finally {
+            submitButton.classList.remove('loading');
+            window.updatePasswordSubmitState();
+        }
     }
 });
 

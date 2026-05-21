@@ -1,8 +1,12 @@
 {% extends 'base_app.html' %}
-{% load tax_tags %}
+{% load static tax_tags %}
 
 {% block title %}Settings - AI Tax Assistant{% endblock %}
 {% block page_title %}Account Preferences{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'chat.css' %}">
+{% endblock %}
 
 {% block content %}
 <div class="settings-grid fade-in">
@@ -104,9 +108,21 @@
                     <strong class="d-block mb-1 text-danger">Purge Account Data</strong>
                     <span class="text-muted text-xs">Permanently delete all tax calculation history and AI chat logs.</span>
                 </div>
-                <button type="button" class="btn-danger-glow" onclick="if(confirm('Permanent deletion requested. Proceed?')) showToast('Data purge initiated.', 'success')">
+                <button type="button" class="btn-danger-glow" onclick="document.getElementById('purgeConfirmModal').classList.add('active')">
                     <i class="fa-solid fa-trash-can"></i> Purge Data
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PURGE CONFIRMATION MODAL -->
+    <div class="chat-modal-overlay" id="purgeConfirmModal" onclick="if(event.target.id === 'purgeConfirmModal') this.classList.remove('active')">
+        <div class="chat-modal-box" style="max-width: 400px; padding: 1.5rem; background: #202123; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; box-shadow: 0 0 15px rgba(0,0,0,0.5);">
+            <h3 style="color: white; font-size: 1.1rem; margin-bottom: 1rem; font-weight: 600; text-align: left;">Purge Data?</h3>
+            <p style="color: #ececec; font-size: 0.95rem; margin-bottom: 2rem; text-align: left; line-height: 1.5;">This will permanently delete all tax calculation history and AI chat logs.</p>
+            <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+                <button onclick="document.getElementById('purgeConfirmModal').classList.remove('active')" class="cancelbtn">Cancel</button>
+                <button onclick="document.getElementById('purgeConfirmModal').classList.remove('active'); showToast('Data purge initiated.', 'success')" class="deletebtn">Purge Data</button>
             </div>
         </div>
     </div>
