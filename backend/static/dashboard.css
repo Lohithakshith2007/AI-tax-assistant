@@ -573,9 +573,13 @@
 }
 
 .modern-form input:focus,
-.modern-form select:focus {
+.modern-form select:focus,
+.signup-right input:focus,
+.signup-right select:focus,
+.signup-right textarea:focus {
     outline: none;
     border-color: var(--accent-neon);
+    box-shadow: 0 0 0 2px rgba(199, 240, 0, 0.12);
 }
 
 .form-row {

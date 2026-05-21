@@ -678,6 +678,7 @@ main {
     border: 1px solid var(--border-color);
     background: #1a1a1a;
     color: var(--text-main);
+    transition: all 0.2s ease;
 }
 
 .signup-right form input::placeholder {

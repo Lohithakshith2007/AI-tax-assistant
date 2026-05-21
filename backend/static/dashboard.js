@@ -217,9 +217,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const calcBtn = document.getElementById('calcBtn');
     const LAST_CALC_KEY = 'ai_tax_last_calculation';
 
+    window.clearLastCalculation = function () {
+        sessionStorage.removeItem(LAST_CALC_KEY);
+    }
+
     // Helper to restore last calculation on load
     function restoreLastCalculation() {
-        const saved = localStorage.getItem(LAST_CALC_KEY);
+        const saved = sessionStorage.getItem(LAST_CALC_KEY);
         if (saved && taxForm) {
             const { inputs, results } = JSON.parse(saved);
 
@@ -274,8 +278,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 const results = await response.json();
 
-                // Save to localStorage for persistence
-                localStorage.setItem(LAST_CALC_KEY, JSON.stringify({ inputs, results }));
+                // Save to sessionStorage for current user session only
+                sessionStorage.setItem(LAST_CALC_KEY, JSON.stringify({ inputs, results }));
 
                 setTimeout(() => {
                     if (globalLoading) globalLoading.style.display = 'none';

@@ -846,16 +846,20 @@
     background: rgba(0, 0, 0, 0.4);
     backdrop-filter: blur(8px);
     z-index: 9999;
-    display: none;
-    /* hidden by default */
+    display: flex;
     align-items: center;
     justify-content: center;
     opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.2s ease, visibility 0s linear 0.2s;
 }
 
 .chat-modal-overlay.active {
-    display: flex;
-    animation: overlayFadeIn 0.2s ease forwards;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transition: opacity 0.2s ease;
 }
 
 /* Modal Box */
@@ -870,10 +874,13 @@
     flex-direction: column;
     overflow: hidden;
     opacity: 0;
+    transform: translateY(20px) scale(0.95);
+    transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .chat-modal-overlay.active .chat-modal-box {
-    animation: modalPopIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    opacity: 1;
+    transform: translateY(0) scale(1);
 }
 
 .modal-header {
