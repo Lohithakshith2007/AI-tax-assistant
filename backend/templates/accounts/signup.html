@@ -6,7 +6,52 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sign Up - AI Tax Assistant</title>
+  <!-- Font Awesome for the eye icon -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <link rel="stylesheet" href="{% static 'style.css' %}">
+  <link rel="stylesheet" href="{% static 'dashboard.css' %}">
+  <style>
+    /* Ensure password fields match the signup form styling */
+    .signup-right .password-wrapper {
+      position: relative;
+      width: 100%;
+    }
+    .signup-right .password-wrapper input {
+      width: 100%;
+      padding-right: 2.5rem;
+      box-sizing: border-box;
+      box-shadow: 0 0 0 1px rgba(199, 240, 0, 0.08);
+      outline: none;
+    }
+    .signup-right .strength-summary {
+      margin-top: 0.25rem;
+    }
+    .signup-right .password-match-text {
+      margin-top: 0.25rem;
+    }
+    .signup-right .password-suggestion-text {
+      margin-top: 0.25rem;
+      color: #fbbf24;
+      font-size: 0.85rem;
+      display: none;
+    }
+    .signup-right .password-suggestion-text:not(:empty) {
+      display: block;
+    }
+    .signup-right #new_password1.valid-input,
+    .signup-right #new_password2.valid-input {
+      border: 1px solid rgba(34, 197, 94, 0.75);
+      box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.12);
+    }
+    .signup-right #new_password1.invalid-input,
+    .signup-right #new_password2.invalid-input {
+      border: 1px solid rgba(239, 68, 68, 0.75);
+      box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.12);
+    }
+    .signup-right .password-validation-message {
+      margin-top: 0;
+    }
+  </style>
 </head>
 
 <body>
@@ -47,7 +92,7 @@
 
 
     <div class="signup-right">
-      <form method="POST" action="{% url 'signup' %}">
+      <form id="signupForm" method="POST" action="{% url 'signup' %}">
         {% csrf_token %}
         
         <!-- Hidden timezone field -->
@@ -60,25 +105,50 @@
         <input type="email" name="email" id="email" placeholder="you@example.com" required />
 
         <label for="password">Password</label>
-        <input type="password" name="password" id="password" placeholder="Enter password" required />
-        <input type="password" name="confirm_password" id="confirm_password" placeholder="confirm password" required />
-        {% if messages %}
-        {% for message in messages %}
-        <p>{{ message }}</p>
-        {% endfor %}
-        {% endif %}
-        <button type="submit" name="submit" class="btn-primary">Sign Up</button>
+        <div class="password-wrapper">
+            <input type="password" name="password" id="new_password1" placeholder="Enter password" required oninput="checkPasswordStrength(this.value, 'strengthMeter')"/>
+            <i class="fa-solid fa-eye pass-toggle" onclick="togglePassword('new_password1', this)"></i>
+        </div>
+        <div class="strength-summary">
+            <span class="strength-label" id="strengthLabel"></span>
+            <div id="strengthMeter" class="strength-meter">
+                <div class="strength-bar"></div>
+            </div>
+        </div>
+
+        <label for="confirm_password">Confirm Password</label>
+        <div class="password-wrapper">
+            <input type="password" name="confirm_password" id="new_password2" placeholder="Confirm password" required oninput="validatePasswordMatch()" />
+            <i class="fa-solid fa-eye pass-toggle" onclick="togglePassword('new_password2', this)"></i>
+        </div>
+        <div class="password-match-text" id="passwordMatchText">Passwords must match.</div>
+        <div class="password-suggestion-text" id="passwordSuggestionText"></div>
+
+        <div id="passwordValidationMessage" class="password-validation-message" {% if messages %}style="display: block;"{% endif %}>
+          {% if messages %}
+            {% for message in messages %}
+            <p>{{ message }}</p>
+            {% endfor %}
+          {% endif %}
+        </div>
+
+        <button type="submit" name="submit" class="btn-primary" id="passwordSubmitBtn" disabled>
+            <span class="btn-text">Sign Up</span>
+            <span class="btn-spinner" aria-hidden="true"></span>
+        </button>
 
         <p class="login-link">Already have an account? <a href="{% url 'signin' %}">Sign In</a></p>
       </form>
     </div>
   </main>
 
+  <script src="{% static 'dashboard.js' %}"></script>
   <script>
     // Detect and store user's timezone on signup
     document.addEventListener('DOMContentLoaded', function() {
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      document.getElementById('timezone').value = timezone;
+      const timezoneField = document.getElementById('timezone');
+      if (timezoneField) timezoneField.value = timezone;
     });
   </script>
 

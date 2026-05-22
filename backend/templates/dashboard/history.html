@@ -104,7 +104,7 @@
             <p>Are you sure you want to delete this calculation record? This action cannot be undone.</p>
         </div>
         <div class="modal-footer-modern" style="border-top: none; gap: 1rem;">
-            <button class="btn-close-footer" onclick="document.getElementById('deleteCalcModal').classList.remove('active')">Cancel</button>
+            <button class="btn-close-footer" onclick="closeHistoryModal('deleteCalcModal')">Cancel</button>
             <button class="btn-primary" id="confirmDeleteBtn" style="background: #ef4444; border: none;">Delete Now</button>
         </div>
     </div>
@@ -118,7 +118,7 @@
                 <i class="fa-solid fa-robot text-accent"></i>
                 <h3>AI Tax Advisor Advice</h3>
             </div>
-            <button class="close-btn" onclick="document.getElementById('adviceModal').classList.remove('active')">
+            <button class="close-btn" onclick="closeHistoryModal('adviceModal')">
                 <i class="fa-solid fa-xmark"></i>
             </button>
         </div>
@@ -126,7 +126,7 @@
             <!-- AI Reply goes here -->
         </div>
         <div class="modal-footer-modern">
-            <button class="btn-close-footer" onclick="document.getElementById('adviceModal').classList.remove('active')">Close</button>
+            <button class="btn-close-footer" onclick="closeHistoryModal('adviceModal')">Close</button>
         </div>
     </div>
 </div>
@@ -138,7 +138,7 @@
     z-index: 10000; display: none; align-items: center; justify-content: center;
     opacity: 0; transition: opacity 0.3s ease;
 }
-.history-modal-overlay.active { display: flex; opacity: 1; }
+.history-modal-overlay.show { display: flex; opacity: 1; }
 
 .history-modal-box {
     background: #111; border: 1px solid rgba(255,255,255,0.1); border-radius: 16px;
@@ -146,7 +146,7 @@
     box-shadow: 0 25px 60px rgba(0,0,0,0.8);
     transform: translateY(30px) scale(0.98); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
-.history-modal-overlay.active .history-modal-box { transform: translateY(0) scale(1); }
+.history-modal-overlay.show .history-modal-box { transform: translateY(0) scale(1); }
 
 .modal-header-modern {
     padding: 1.25rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.05);
@@ -157,9 +157,12 @@
 .close-btn { background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.2rem; }
 
 .modal-body-modern {
-    padding: 1.5rem; overflow-y: auto; color: #ececec; line-height: 1.6; font-size: 0.95rem;
+    padding: 2.5rem; overflow-y: auto; color: #ececec; line-height: 1.6; font-size: 0.9rem;
 }
-.modal-body-modern h1, .modal-body-modern h2, .modal-body-modern h3 { color: var(--accent-neon); margin-top: 1.2rem; }
+.modal-body-modern li{
+    margin-left: 1.8rem;
+}
+.modal-body-modern h1, .modal-body-modern h2, .modal-body-modern h3 { color: var(--accent-neon); margin: 1.2rem 0 0.8rem;font-size: 1.2rem; }
 .modal-body-modern hr { border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 1.5rem 0; }
 
 .modal-footer-modern { padding: 1rem 1.5rem; border-top: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: flex-end; }
@@ -177,17 +180,31 @@ function viewAIExplanation(calcId) {
     adviceContent.innerHTML = marked.parse(rawContent);
     
     // Open modal
-    document.getElementById('adviceModal').classList.add('active');
+    openHistoryModal('adviceModal');
 }
 
 let calcToDelete = null;
 let rowToDelete = null;
 
+function openHistoryModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    modal.style.display = 'flex';
+    setTimeout(() => modal.classList.add('show'), 10);
+}
+
+function closeHistoryModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    modal.classList.remove('show');
+    setTimeout(() => modal.style.display = 'none', 300);
+}
+
 function confirmDeleteCalc(e, calcId, btn) {
     e.stopPropagation();
     calcToDelete = calcId;
     rowToDelete = btn.closest('tr');
-    document.getElementById('deleteCalcModal').classList.add('active');
+    openHistoryModal('deleteCalcModal');
 }
 
 document.getElementById('confirmDeleteBtn').onclick = async function() {
@@ -205,7 +222,7 @@ document.getElementById('confirmDeleteBtn').onclick = async function() {
             rowToDelete.style.opacity = '0';
             rowToDelete.style.transform = 'translateX(20px)';
             setTimeout(() => rowToDelete.remove(), 300);
-            document.getElementById('deleteCalcModal').classList.remove('active');
+            closeHistoryModal('deleteCalcModal');
             showToast('Calculation deleted successfully.');
         } else {
             showToast(data.error || 'Failed to delete.', 'error');
@@ -217,13 +234,13 @@ document.getElementById('confirmDeleteBtn').onclick = async function() {
 
 function closeDeleteCalcModal(e) {
     if (e.target.id === 'deleteCalcModal') {
-        document.getElementById('deleteCalcModal').classList.remove('active');
+        closeHistoryModal('deleteCalcModal');
     }
 }
 
 function closeAdviceModal(e) {
     if (e.target.id === 'adviceModal') {
-        document.getElementById('adviceModal').classList.remove('active');
+        closeHistoryModal('adviceModal');
     }
 }
 

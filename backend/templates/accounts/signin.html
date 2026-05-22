@@ -5,8 +5,27 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sign Up - AI Tax Assistant</title>
+  <title>Sign In - AI Tax Assistant</title>
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <link rel="stylesheet" href="{% static 'style.css' %}">
+  <link rel="stylesheet" href="{% static 'dashboard.css' %}">
+  <style>
+    .signup-right .password-wrapper {
+      position: relative;
+      width: 100%;
+    }
+    .signup-right .password-wrapper input {
+      width: 100%;
+      padding-right: 2.5rem;
+      box-sizing: border-box;
+      box-shadow: 0 0 0 1px rgba(199, 240, 0, 0.08);
+      outline: none;
+    }
+    .signup-right .password-validation-message {
+      margin-top: 0;
+    }
+  </style>
 </head>
 
 <body>
@@ -55,13 +74,18 @@
         <input type="email" name="email" id="email" placeholder="you@example.com" required />
 
         <label for="password">Password</label>
-        <input type="password" name="password" id="password" placeholder="Enter password" required />
+        <div class="password-wrapper">
+            <input type="password" name="password" id="password" placeholder="Enter password" required />
+            <i class="fa-solid fa-eye pass-toggle" onclick="togglePassword('password', this)"></i>
+        </div>
 
-        {% if messages %}
-        {% for message in messages %}
-        <p>{{ message }}</p>
-        {% endfor %}
-        {% endif %}
+        <div id="passwordValidationMessage" class="password-validation-message" {% if messages %}style="display: block;"{% endif %}>
+          {% if messages %}
+            {% for message in messages %}
+            <p>{{ message }}</p>
+            {% endfor %}
+          {% endif %}
+        </div>
 
         <button type="submit" class="btn-primary">Sign In</button>
 
@@ -69,6 +93,8 @@
       </form>
     </div>
   </main>
+
+  <script src="{% static 'dashboard.js' %}"></script>
 
 </body>
 
