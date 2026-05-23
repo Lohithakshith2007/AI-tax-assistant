@@ -32,17 +32,22 @@
                 <div class="modal-header">
                     <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                         <h3>Recent Chats</h3>
-                        <i class="fa-solid fa-magnifying-glass search-icon" id="searchToggleIcon" onclick="toggleSearchInput()"></i>
+                        <i class="fa-solid fa-magnifying-glass search-icon" id="searchToggleIcon"
+                            onclick="toggleSearchInput()"></i>
                     </div>
-                    <input type="text" id="historySearch" placeholder="Search chats..." class="modal-search-input" onkeyup="filterChats()" style="display: none; margin-top: 0.8rem;">
+                    <input type="text" id="historySearch" placeholder="Search chats..." class="modal-search-input"
+                        onkeyup="filterChats()" style="display: none; margin-top: 0.8rem;">
                 </div>
                 <div class="modal-history-list" id="modalHistoryList">
                     {% for conv in conversations %}
                     <div class="modal-history-item">
-                        <button class="history-item-btn" onclick="loadConversation({{ conv.id }}, null); closeChatModalById('historyModal')">
+                        <button class="history-item-btn"
+                            onclick="loadConversation({{ conv.id }}, null); closeChatModalById('historyModal')">
                             {{ conv.title }}
                         </button>
-                        <button class="delete-chat-btn" onclick="promptDeleteConversation(event, {{ conv.id }}, this, '{{ conv.title|escapejs }}')" title="Delete chat">
+                        <button class="delete-chat-btn"
+                            onclick="promptDeleteConversation(event, {{ conv.id }}, this, '{{ conv.title|escapejs }}')"
+                            title="Delete chat">
                             <i class="fa-solid fa-trash"></i>
                         </button>
                     </div>
@@ -55,9 +60,12 @@
 
         <!-- DELETE CONFIRMATION MODAL -->
         <div class="chat-modal-overlay" id="deleteConfirmModal" onclick="closeChatModal(event, 'deleteConfirmModal')">
-            <div class="chat-modal-box" style="max-width: 400px; padding: 1.5rem; background: #202123; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; box-shadow: 0 0 15px rgba(0,0,0,0.5);">
-                <h3 style="color: white; font-size: 1.1rem; margin-bottom: 1rem; font-weight: 600; text-align: left;">Delete chat?</h3>
-                <p style="color: #ececec; font-size: 0.95rem; margin-bottom: 2rem; text-align: left; line-height: 1.5;">This will delete the <strong id="deleteChatTitleName"> conversation</strong>.</p>
+            <div class="chat-modal-box"
+                style="max-width: 400px; padding: 1.5rem; background: #202123; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; box-shadow: 0 0 15px rgba(0,0,0,0.5);">
+                <h3 style="color: white; font-size: 1.1rem; margin-bottom: 1rem; font-weight: 600; text-align: left;">
+                    Delete chat?</h3>
+                <p style="color: #ececec; font-size: 0.95rem; margin-bottom: 2rem; text-align: left; line-height: 1.5;">
+                    This will delete the <strong id="deleteChatTitleName"> conversation</strong>.</p>
                 <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
                     <button onclick="closeChatModalById('deleteConfirmModal')" class="cancelbtn">Cancel</button>
                     <button onclick="confirmDeleteConversation()" class="deletebtn">Delete</button>
@@ -74,16 +82,19 @@
             <div class="chat-input-area">
                 <div class="premium-input-wrapper">
                     <!-- File Preview Container -->
-                    <div id="filePreviewContainerLanding" style="display: none; width: 100%; margin-bottom: 0.5rem; gap: 0.5rem; overflow-x: auto; white-space: nowrap; padding-bottom: 0.2rem;"></div>
-                    
+                    <div id="filePreviewContainerLanding"
+                        style="display: none; width: 100%; margin-bottom: 0.5rem; gap: 0.5rem; overflow-x: auto; white-space: nowrap; padding-bottom: 0.2rem;">
+                    </div>
+
                     <div style="display: flex; align-items: center; width: 100%;">
-                        <label for="globalFileInput" style="margin:0;"><i class="fa-solid fa-plus text-muted attach-file-btn" style="cursor: pointer; padding-right: 10px;"></i></label>
+                        <label for="globalFileInput" style="margin:0;"><i
+                                class="fa-solid fa-plus text-muted attach-file-btn"
+                                style="cursor: pointer; padding-right: 10px;"></i></label>
                         <input type="text" id="messageInput" placeholder="Ask AI Tax Advisor...">
                         <div style="display: flex; align-items: center; gap: 0.75rem;">
                             <span class="text-xs     font-weight-bold"
                                 style="background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px;">FAST</span>
-                            <button id="sendBtn"
-                                style="background: transparent; border: none; color: var(--accent-neon); cursor: pointer; font-size: 1.2rem;">
+                            <button id="sendBtn" class="chat-send-button">
                                 <i class="fa-solid fa-paper-plane"></i>
                             </button>
                         </div>
@@ -113,10 +124,14 @@
         <div class="chat-input-footer" id="chatInputWrapper" style="display: none;">
             <div class="premium-input-wrapper">
                 <!-- File Preview Container -->
-                <div id="filePreviewContainerChat" style="display: none; width: 100%; margin-bottom: 0.5rem; gap: 0.5rem; overflow-x: auto; white-space: nowrap; padding-bottom: 0.2rem;"></div>
-                
+                <div id="filePreviewContainerChat"
+                    style="display: none; width: 100%; margin-bottom: 0.5rem; gap: 0.5rem; overflow-x: auto; white-space: nowrap; padding-bottom: 0.2rem;">
+                </div>
+
                 <div style="display: flex; align-items: center; width: 100%;">
-                    <label for="globalFileInput" style="margin:0;"><i class="fa-solid fa-plus text-muted attach-file-btn" style="cursor: pointer; padding-right: 10px;"></i></label>
+                    <label for="globalFileInput" style="margin:0;"><i
+                            class="fa-solid fa-plus text-muted attach-file-btn"
+                            style="cursor: pointer; padding-right: 10px;"></i></label>
                     <input type="text" id="chatMessageInput" placeholder="Ask AI Tax Advisor..." autocomplete="off">
                     <button id="chatSendBtn" type="button" class="chat-send-button">
                         <i class="fa-solid fa-paper-plane"></i>

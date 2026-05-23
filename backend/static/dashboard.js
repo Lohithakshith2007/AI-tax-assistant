@@ -339,6 +339,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const validationMessage = document.getElementById('passwordValidationMessage');
         const newPasswordInput = document.getElementById('new_password1');
         const confirmPasswordInput = document.getElementById('new_password2');
+        const suggestionText = document.getElementById('passwordSuggestionText');
 
         const ruleStatus = Object.entries(passwordRules).reduce((acc, [key, test]) => {
             const valid = test(pass);
@@ -362,16 +363,41 @@ document.addEventListener("DOMContentLoaded", () => {
             confirmPasswordInput.classList.remove('valid-input', 'invalid-input');
         }
 
+        // Green border for Strong (4) and Very Strong (5)
+        const isValidStrength = completedRules >= 4;
+
         if (pass.length) {
-            newPasswordInput.classList.toggle('valid-input', completedRules === Object.keys(passwordRules).length);
-            newPasswordInput.classList.toggle('invalid-input', completedRules < Object.keys(passwordRules).length);
+            if (isValidStrength) {
+                newPasswordInput.classList.add('valid-input');
+                newPasswordInput.classList.remove('invalid-input');
+            } else {
+                newPasswordInput.classList.add('invalid-input');
+                newPasswordInput.classList.remove('valid-input');
+            }
+
+            // Show suggestion until Very Strong (5 rules) - including Strong
+            if (suggestionText && completedRules < 5) {
+                const missingRules = [];
+                if (!ruleStatus.length) missingRules.push('At least 8 characters');
+                if (!ruleStatus.uppercase) missingRules.push('uppercase letter');
+                if (!ruleStatus.lowercase) missingRules.push('lowercase letter');
+                if (!ruleStatus.number) missingRules.push('number');
+                if (!ruleStatus.special) missingRules.push('special character');
+                if (missingRules.length) {
+                    suggestionText.textContent = `Add ${missingRules.join(', ')}`;
+                    suggestionText.style.display = 'block';
+                }
+            } else if (suggestionText) {
+                suggestionText.style.display = 'none';
+            }
         } else {
             newPasswordInput.classList.remove('valid-input', 'invalid-input');
+            if (suggestionText) suggestionText.style.display = 'none';
         }
 
         let strengthState = 'weak';
         let label = 'Weak';
-        if (completedRules === Object.keys(passwordRules).length) {
+        if (completedRules === 5) {
             strengthState = 'very-strong';
             label = 'Very Strong';
         } else if (completedRules >= 4) {
@@ -402,9 +428,11 @@ document.addEventListener("DOMContentLoaded", () => {
         const confirmPassword = document.getElementById('new_password2').value;
         const submitButton = document.getElementById('passwordSubmitBtn');
 
-        const validRules = Object.values(passwordRules).every(test => test(newPassword));
+        const completedRules = Object.values(passwordRules).filter(test => test(newPassword)).length;
+        // CHANGED: Allow submit for Strong (4) and Very Strong (5)
+        const isValidStrength = completedRules >= 4;
         const passwordsMatch = newPassword && newPassword === confirmPassword;
-        submitButton.disabled = !(validRules && passwordsMatch);
+        submitButton.disabled = !(isValidStrength && passwordsMatch);
         return !submitButton.disabled;
     }
 

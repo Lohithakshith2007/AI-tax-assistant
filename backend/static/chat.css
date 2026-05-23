@@ -997,3 +997,33 @@
     color: #ff4a4a;
     background: rgba(255, 74, 74, 0.1);
 }
+
+/* Fix dropdown to appear above modal overlay */
+.user-profile-dropdown {
+    position: relative;
+    z-index: 100000 !important;
+}
+
+.dropdown-menu.show {
+    z-index: 100001 !important;
+}
+
+.chat-modal-overlay {
+    pointer-events: none;
+}
+
+.chat-modal-overlay .chat-modal-box {
+    pointer-events: auto;
+}
+
+.app-main {
+    overflow: visible !important;
+}
+
+.chat-workspace {
+    overflow: visible !important;
+}
+
+.chat-main {
+    overflow: visible !important;
+}

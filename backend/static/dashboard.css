@@ -215,7 +215,8 @@
     background-color: rgba(11, 11, 11, 0.85);
     backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border-color);
-    z-index: 90;
+    position: relative;
+    z-index: 1000;
 }
 
 .page-title {
@@ -227,6 +228,11 @@
 
 .user-profile-dropdown {
     position: relative;
+    z-index: 1100;
+}
+
+.chat-top-actions {
+    z-index: 10;
 }
 
 .user-profile-trigger {
@@ -750,6 +756,17 @@ input[type=number]::-webkit-outer-spin-button {
 input[type=number] {
     -moz-appearance: textfield;
     appearance: textfield;
+}
+
+.know-more-btn {
+    border: 1px solid var(--border-color);
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.know-more-btn:hover {
+    opacity: 0.8;
 }
 
 /* ===== LOADING OVERLAY ===== */

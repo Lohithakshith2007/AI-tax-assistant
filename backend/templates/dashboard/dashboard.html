@@ -41,7 +41,7 @@
                 <p class="text-muted text-sm mb-4" style="line-height: 1.6; max-width: 600px;">Use our AI-powered calculator to get instant breakdowns, smart deduction strategies, and compliance checks customized for your operational region.</p>
                 <div style="display: flex; gap: 1rem;">
                     <a href="{% url 'calculator' %}" class="btn-primary"><i class="fa-solid fa-calculator"></i> Open Tax Calculator</a>
-                    <a href="{% url 'chat' %}" class="btn-outline"><i class="fa-solid fa-robot"></i> Consult AI Advisor</a>
+                    <a href="{% url 'chat' %}" class="know-more-btn"><i class="fa-solid fa-robot"></i> Consult AI Advisor</a>
                 </div>
             </div>
             <div style="font-size: 8rem; color: rgba(255,255,255,0.03); transform: rotate(15deg);">
@@ -54,7 +54,7 @@
     <div class="card mt-4">
         <div class="card-header flex-between">
             <h3>Recent Analysis Activity</h3>
-            <a href="{% url 'history' %}" class="btn-outline" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;">View all history</a>
+            <a href="{% url 'history' %}" class="know-more-btn" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;">View all history</a>
         </div>
         <div class="card-body p-0">
             {% if calculations %}

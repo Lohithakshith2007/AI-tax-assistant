@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import authenticate, login
+from accounts.models import Profile
 
 # temporary
 from django.contrib.auth import logout
@@ -29,14 +30,16 @@ def signup(request):
             password=password
         )
 
-        # Update profile with timezone
-        user.profile.timezone = timezone
-        user.profile.save()
+        profile, created = Profile.objects.get_or_create(user=user)
+        profile.timezone = timezone
+        profile.save()
 
-        messages.success(request, "Account created successfully!")
-        return redirect("signin")
+        login(request, user)
 
-    return render(request, "accounts/signup.html")  
+        # Redirect to dashboard
+        return redirect("dashboard")
+
+    return render(request, "accounts/signup.html")
 
 def signin(request):
     if request.method == "POST":
