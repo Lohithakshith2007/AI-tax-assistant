@@ -116,6 +116,10 @@ a {
     border-radius: 6px;
 }
 
+.btn-outline:hover {
+    opacity: 0.8;
+}
+
 /* ===== MAIN ===== */
 main {
     padding: 2rem;
