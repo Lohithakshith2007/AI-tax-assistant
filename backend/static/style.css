@@ -166,6 +166,10 @@ main {
 
 }
 
+#featureshome {
+    scroll-margin-top: 200px;
+}
+
 /* ===== HERO SECTION ===== */
 .hero {
     display: flex;
