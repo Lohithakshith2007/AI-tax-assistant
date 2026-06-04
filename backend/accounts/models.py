@@ -10,10 +10,28 @@ class Profile(models.Model):
     tax_id = models.CharField(max_length=30, blank=True, null=True)
     preferred_country = models.CharField(max_length=50, default='india')
     timezone = models.CharField(max_length=50, default='UTC')
+    role = models.CharField(
+        max_length=10,
+        choices=[('user', 'User'), ('admin', 'Admin')],
+        default='user',
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.user.username}'s Profile"
+
+
+def is_admin(user):
+    """Return True when the user has an admin role in their Profile."""
+    return (
+        user.is_authenticated
+        and hasattr(user, "profile")
+        and user.profile.role == "admin"
+    )
+
+# Promote a user to analytics/admin access like this:
+# user.profile.role = 'admin'
+# user.profile.save()
 
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):

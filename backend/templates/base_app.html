@@ -6,6 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Dashboard - AI Tax Assistant{% endblock %}</title>
+    <meta name="user-id" content="{{ request.user.id|default:'' }}">
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
@@ -51,7 +52,7 @@
                 <span class="nav-icon"><i class="fa-solid fa-robot"></i></span>
                 <span class="nav-label">AI Chat</span>
             </a>
-            {% if request.user.is_superuser %}
+            {% if request.user.is_authenticated and request.user.profile.role == 'admin' %}
             <a href="{% url 'analytics_dashboard' %}" class="nav-item">
                 <span class="nav-icon"><i class="fa-solid fa-chart-line"></i></span>
                 <span class="nav-label">Analytics</span>
@@ -93,7 +94,7 @@
                         <a href="{% url 'settings' %}" class="dropdown-item"><i class="fa-solid fa-gear"></i>
                             Settings</a>
                         <hr class="nav-divider" style="margin: 0.5rem 0;">
-                        <a href="{% url 'logout' %}" class="dropdown-item text-danger" onclick="clearLastCalculation()"><i
+                        <a href="{% url 'logout' %}" class="dropdown-item text-danger" onclick="clearBrowserState()"><i
                                 class="fa-solid fa-arrow-right-from-bracket"></i> Log Out</a>
                     </div>
                 </div>

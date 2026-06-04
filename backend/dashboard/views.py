@@ -8,7 +8,7 @@ from django.core.exceptions import ValidationError
 from django.views.decorators.http import require_POST
 from django.contrib.auth.models import User
 from tax_engine.models import TaxCalculation
-from accounts.models import Profile
+from accounts.models import Profile, is_admin
 from ai_advisor.models import ChatMessage
 import os
 import json
@@ -31,11 +31,8 @@ def dashboard_view(request):
     
     return render(request, 'dashboard/dashboard.html', context)
 
-def is_admin_check(user):
-    return user.is_superuser
-
 @login_required
-@user_passes_test(is_admin_check)
+@user_passes_test(is_admin, login_url='dashboard')
 def analytics_dashboard_view(request):
     total_users = User.objects.count()
     total_calculations = TaxCalculation.objects.count()

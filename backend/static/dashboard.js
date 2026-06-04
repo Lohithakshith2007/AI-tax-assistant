@@ -217,8 +217,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const calcBtn = document.getElementById('calcBtn');
     const LAST_CALC_KEY = 'ai_tax_last_calculation';
 
-    window.clearLastCalculation = function () {
+    window.clearBrowserState = function () {
         sessionStorage.removeItem(LAST_CALC_KEY);
+        // Clear chat variables to prevent them leaking across test user accounts
+        localStorage.removeItem('chatStarted');
+        localStorage.removeItem('currentConversationId');
+        localStorage.removeItem('chatOwnerId');
     }
 
     // Helper to restore last calculation on load

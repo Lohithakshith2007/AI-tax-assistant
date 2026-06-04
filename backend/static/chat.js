@@ -1,6 +1,7 @@
 let currentConversationId = null;
 const CHAT_STARTED_KEY = 'chatStarted';
 const CHAT_CONVERSATION_KEY = 'currentConversationId';
+const CHAT_OWNER_KEY = 'chatOwnerId';
 
 // Initialize marked
 marked.setOptions({
@@ -17,6 +18,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const started = localStorage.getItem(CHAT_STARTED_KEY);
     const onChatPage = window.location.pathname.includes('/ai/chat');
     const storedConversationId = localStorage.getItem(CHAT_CONVERSATION_KEY);
+    
+    // Cross-account validation
+    const userIdMeta = document.querySelector('meta[name="user-id"]');
+    const currentUserId = userIdMeta ? userIdMeta.content : '';
+    const storedOwnerId = localStorage.getItem(CHAT_OWNER_KEY);
+    
+    let mismatchedAccount = false;
+    if (currentUserId && storedOwnerId && currentUserId !== storedOwnerId) {
+        mismatchedAccount = true;
+    }
 
     // Restore previous conversation on page load / refresh intelligently
     function isValidId(id) {
@@ -24,15 +35,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (onChatPage) {
-        if (started === 'true' && isValidId(storedConversationId)) {
+        if (!mismatchedAccount && started === 'true' && isValidId(storedConversationId)) {
             currentConversationId = storedConversationId;
             showChatScreen();
             // Reload messages from backend
             loadConversation(storedConversationId, null);
         } else {
-            // Fallback: forcefully wipe dangling state
+            // Fallback: forcefully wipe dangling state completely
             localStorage.removeItem(CHAT_STARTED_KEY);
             localStorage.removeItem(CHAT_CONVERSATION_KEY);
+            localStorage.removeItem(CHAT_OWNER_KEY);
         }
     }
 
@@ -87,6 +99,7 @@ function resetChat() {
     currentConversationId = null;
     localStorage.removeItem(CHAT_STARTED_KEY);
     localStorage.removeItem(CHAT_CONVERSATION_KEY);
+    localStorage.removeItem(CHAT_OWNER_KEY);
 
     const landingScreen    = document.getElementById('landingScreen');
     const msgContainer     = document.getElementById('messages');
@@ -117,8 +130,13 @@ async function loadConversation(id, element) {
     }
 
     currentConversationId = id;
+    const userIdMeta = document.querySelector('meta[name="user-id"]');
+    
     localStorage.setItem(CHAT_STARTED_KEY, 'true');
     localStorage.setItem(CHAT_CONVERSATION_KEY, id);
+    if (userIdMeta && userIdMeta.content) {
+        localStorage.setItem(CHAT_OWNER_KEY, userIdMeta.content);
+    }
 
     showChatScreen();
 
@@ -201,7 +219,13 @@ async function sendMessage() {
             renderMessage(data.reply, 'ai');
             if (!currentConversationId && data.conversation_id) {
                 currentConversationId = data.conversation_id;
+                
+                const userIdMeta = document.querySelector('meta[name="user-id"]');
                 localStorage.setItem(CHAT_CONVERSATION_KEY, currentConversationId);
+                if (userIdMeta && userIdMeta.content) {
+                    localStorage.setItem(CHAT_OWNER_KEY, userIdMeta.content);
+                }
+                
                 addHistoryItem(data.conversation_id, data.conversation_title || text);
             }
             scrollToBottom();
