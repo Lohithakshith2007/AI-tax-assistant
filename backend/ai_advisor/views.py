@@ -25,7 +25,9 @@ def chatbot(request):
             
             # Get or create conversation
             if conversation_id:
-                conversation = get_object_or_404(Conversation, id=conversation_id, user=request.user)
+                conversation = Conversation.objects.filter(id=conversation_id, user=request.user).first()
+                if not conversation:
+                    return JsonResponse({"error": "Conversation not found or unauthorized"}, status=404)
             else:
                 conversation = Conversation.objects.create(user=request.user, title=message_text[:30] + "...")
 
@@ -70,9 +72,23 @@ def chatbot(request):
 
 @login_required(login_url="login")
 def get_history(request, conversation_id):
-    conversation = get_object_or_404(Conversation, id=conversation_id, user=request.user)
-    messages = conversation.messages.all().values('sender', 'text', 'created_at')
-    return JsonResponse({"messages": list(messages)})
+    try:
+        conversation = Conversation.objects.filter(id=conversation_id, user=request.user).first()
+        
+        if not conversation:
+            return JsonResponse({
+                "error": "History not found or unauthorized", 
+                "messages": []
+            }, status=404)
+            
+        messages = conversation.messages.all().values('sender', 'text', 'created_at')
+        return JsonResponse({"messages": list(messages)})
+        
+    except Exception as e:
+        return JsonResponse({
+            "error": "Failed to load history", 
+            "messages": []
+        }, status=500)
 
 @login_required(login_url="login")
 @csrf_exempt

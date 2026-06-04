@@ -1,0 +1,117 @@
+{% extends 'base_app.html' %}
+{% load tax_tags humanize %}
+
+{% block title %}Analytics - AI Tax Assistant{% endblock %}
+{% block page_title %}Analytics Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-grid fade-in page-transition">
+    
+    <!-- STATS ROW -->
+    <div class="stats-container">
+        <div class="stat-card">
+            <div class="stat-icon"><i class="fa-solid fa-users" style="color:var(--accent-neon);"></i></div>
+            <div class="stat-info">
+                <span class="stat-label">Total Users</span>
+                <span class="stat-value">{{ total_users }}</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon"><i class="fa-solid fa-file-invoice" style="color:var(--accent-neon);"></i></div>
+            <div class="stat-info">
+                <span class="stat-label">Total Calculations</span>
+                <span class="stat-value">{{ total_calculations }}</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon"><i class="fa-solid fa-robot" style="color:var(--accent-neon);"></i></div>
+            <div class="stat-info">
+                <span class="stat-label">AI Conversations</span>
+                <span class="stat-value">{{ total_ai_messages }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-top: 1.5rem;">
+        
+        <!-- RECENT USERS -->
+        <div class="card">
+            <div class="card-header flex-between">
+                <h3>Recent User Signups</h3>
+                <i class="fa-solid fa-user-plus text-muted"></i>
+            </div>
+            <div class="card-body p-0">
+                {% if recent_users %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Date Joined</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in recent_users %}
+                            <tr>
+                                <td class="font-weight-bold" style="color: var(--text-main);">{{ user.username }}</td>
+                                <td class="text-sm text-muted">{{ user.email|default:"N/A" }}</td>
+                                <td class="text-sm">{{ user.date_joined|date:"M d, Y" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty-state p-5 text-center">
+                    <p class="text-muted">No users found.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- RECENT ACTIVITY -->
+        <div class="card">
+            <div class="card-header flex-between">
+                <h3>Recent Calculations</h3>
+                <i class="fa-solid fa-bolt text-muted"></i>
+            </div>
+            <div class="card-body p-0">
+                {% if recent_activity %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Jurisdiction</th>
+                                <th>Tax Liability</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for calc in recent_activity %}
+                            <tr>
+                                <td class="font-weight-bold" style="color: var(--text-main);">{{ calc.user.username }}</td>
+                                <td>
+                                    <span class="badge" style="background: rgba(199,240,0,0.05); border: 1px solid rgba(199,240,0,0.1); color: var(--accent-neon);">{{ calc.country|country_display }}</span>
+                                </td>
+                                <td class="text-accent font-weight-bold">
+                                    {{ calc.country|currency_symbol }}{{ calc.estimated_tax|floatformat:0|intcomma }}
+                                </td>
+                                <td class="text-muted text-sm">{{ calc.created_at|date:"M d, Y" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty-state p-5 text-center">
+                    <p class="text-muted">No recent activity.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}

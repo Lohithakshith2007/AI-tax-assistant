@@ -51,6 +51,12 @@
                 <span class="nav-icon"><i class="fa-solid fa-robot"></i></span>
                 <span class="nav-label">AI Chat</span>
             </a>
+            {% if request.user.is_superuser %}
+            <a href="{% url 'analytics_dashboard' %}" class="nav-item">
+                <span class="nav-icon"><i class="fa-solid fa-chart-line"></i></span>
+                <span class="nav-label">Analytics</span>
+            </a>
+            {% endif %}
         </nav>
     </aside>
 

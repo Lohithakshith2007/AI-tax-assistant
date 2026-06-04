@@ -1,13 +1,15 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.password_validation import validate_password
 from django.http import JsonResponse
 from django.core.exceptions import ValidationError
 from django.views.decorators.http import require_POST
+from django.contrib.auth.models import User
 from tax_engine.models import TaxCalculation
 from accounts.models import Profile
+from ai_advisor.models import ChatMessage
 import os
 import json
 from groq import Groq
@@ -28,6 +30,28 @@ def dashboard_view(request):
     }
     
     return render(request, 'dashboard/dashboard.html', context)
+
+def is_admin_check(user):
+    return user.is_superuser
+
+@login_required
+@user_passes_test(is_admin_check)
+def analytics_dashboard_view(request):
+    total_users = User.objects.count()
+    total_calculations = TaxCalculation.objects.count()
+    total_ai_messages = ChatMessage.objects.count()
+    
+    recent_users = User.objects.order_by('-date_joined')[:5]
+    recent_activity = TaxCalculation.objects.order_by('-created_at')[:5]
+    
+    context = {
+        'total_users': total_users,
+        'total_calculations': total_calculations,
+        'total_ai_messages': total_ai_messages,
+        'recent_users': recent_users,
+        'recent_activity': recent_activity,
+    }
+    return render(request, 'dashboard/analytics.html', context)
 
 @login_required
 def calculator_view(request):

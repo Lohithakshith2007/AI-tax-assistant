@@ -18,12 +18,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const onChatPage = window.location.pathname.includes('/ai/chat');
     const storedConversationId = localStorage.getItem(CHAT_CONVERSATION_KEY);
 
-    // Restore previous conversation on page load / refresh
-    if (onChatPage && started === 'true' && storedConversationId) {
-        currentConversationId = storedConversationId;
-        showChatScreen();
-        // Reload messages from backend
-        loadConversation(storedConversationId, null);
+    // Restore previous conversation on page load / refresh intelligently
+    function isValidId(id) {
+        return id && id !== 'null' && id !== 'undefined' && id.trim() !== '';
+    }
+
+    if (onChatPage) {
+        if (started === 'true' && isValidId(storedConversationId)) {
+            currentConversationId = storedConversationId;
+            showChatScreen();
+            // Reload messages from backend
+            loadConversation(storedConversationId, null);
+        } else {
+            // Fallback: forcefully wipe dangling state
+            localStorage.removeItem(CHAT_STARTED_KEY);
+            localStorage.removeItem(CHAT_CONVERSATION_KEY);
+        }
     }
 
     if (sendBtn) sendBtn.onclick = sendMessage;
@@ -101,6 +111,11 @@ function resetChat() {
 }
 
 async function loadConversation(id, element) {
+    if (!id || id === 'null' || id === 'undefined' || String(id).trim() === '') {
+        resetChat();
+        return;
+    }
+
     currentConversationId = id;
     localStorage.setItem(CHAT_STARTED_KEY, 'true');
     localStorage.setItem(CHAT_CONVERSATION_KEY, id);
@@ -114,13 +129,26 @@ async function loadConversation(id, element) {
         const response = await fetch(`/ai/history/${id}/`);
         const data = await response.json();
 
+        // Validate backend response safely
+        if (!response.ok || data.error || !Array.isArray(data.messages)) {
+            console.warn("Failed or invalid history loaded: ", data.error || "Missing messages array");
+            resetChat();
+            return;
+        }
+
         msgContainer.innerHTML = '';
-        data.messages.forEach(msg => {
-            renderMessage(msg.text, msg.sender);
-        });
+        
+        // Handle gracefully if messages array is empty
+        if (data.messages.length > 0) {
+            data.messages.forEach(msg => {
+                renderMessage(msg.text, msg.sender);
+            });
+        }
+        
         scrollToBottom();
     } catch (error) {
-        msgContainer.innerHTML = '<div style="padding:2rem; color: rgba(255,100,100,0.8);">Error loading history.</div>';
+        console.error("Error loading chat history:", error);
+        resetChat(); // Failsafe fallback ensuring UX doesn't break
     }
 }
 
