@@ -45,7 +45,7 @@ def chatbot(request):
 
             # Send to Groq
             completion = client.chat.completions.create(
-                model="llama-3.3-70b-versatile", # Reliable pro model
+                model="openai/gpt-oss-120b", # Reliable pro model
                 messages=messages,
                 temperature=0.4,
                 max_completion_tokens=1000,

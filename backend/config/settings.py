@@ -93,7 +93,7 @@ DATABASES = {
     'default': dj_database_url.config(
         default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
         conn_max_age=600,
-        ssl_require=True  # Crucial for Neon DB
+        ssl_require=os.getenv('RENDER') is not None or 'neon.tech' in os.getenv('DATABASE_URL', '')
     )
 }
 
