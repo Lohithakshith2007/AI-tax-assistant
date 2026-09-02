@@ -176,7 +176,9 @@ document.addEventListener("DOMContentLoaded", () => {
             const rows = document.querySelectorAll('#historyTable tbody tr');
 
             rows.forEach(row => {
-                const text = row.textContent.toLowerCase();
+                const searchableRow = row.cloneNode(true);
+                searchableRow.querySelector('[id^="ai-data-"]')?.remove();
+                const text = searchableRow.textContent.toLowerCase();
                 row.style.display = text.includes(filter) ? '' : 'none';
             });
         });
