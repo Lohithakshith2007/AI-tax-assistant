@@ -1,12 +1,9 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from django.contrib import messages
-from django.contrib.auth import authenticate, login
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
+from django.http import JsonResponse
 from accounts.models import Profile
-
-# temporary
-from django.contrib.auth import logout
 
 def signup(request):
     if request.method == "POST":
@@ -16,12 +13,20 @@ def signup(request):
         confirm_password = request.POST.get("confirm_password")
         timezone = request.POST.get("timezone", "UTC")
 
+        is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.content_type == 'application/json'
+
         if password != confirm_password:
-            messages.error(request, "Passwords do not match")
+            error_msg = "Passwords do not match"
+            if is_ajax:
+                return JsonResponse({"success": False, "error": error_msg}, status=400)
+            messages.error(request, error_msg)
             return redirect("signup")
 
         if User.objects.filter(username=username).exists():
-            messages.error(request, "Username already exists")
+            error_msg = "Username already exists"
+            if is_ajax:
+                return JsonResponse({"success": False, "error": error_msg}, status=400)
+            messages.error(request, error_msg)
             return redirect("signup")
 
         user = User.objects.create_user(
@@ -36,7 +41,9 @@ def signup(request):
 
         login(request, user)
 
-        # Redirect to dashboard
+        if is_ajax:
+            return JsonResponse({"success": True, "redirect_url": "/dashboard/"})
+
         return redirect("dashboard")
 
     return render(request, "accounts/signup.html")
@@ -46,13 +53,20 @@ def signin(request):
         username = request.POST.get("username")
         password = request.POST.get("password")
 
+        is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.content_type == 'application/json'
+
         user = authenticate(request, username=username, password=password)
 
         if user is not None:
             login(request, user)
+            if is_ajax:
+                return JsonResponse({"success": True, "redirect_url": "/dashboard/"})
             return redirect("dashboard")
         else:
-            messages.error(request, "Invalid username or password")
+            error_msg = "Invalid username or password"
+            if is_ajax:
+                return JsonResponse({"success": False, "error": error_msg}, status=400)
+            messages.error(request, error_msg)
             return redirect("signin")
 
     return render(request, "accounts/signin.html")

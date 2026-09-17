@@ -25,6 +25,26 @@
     .signup-right .password-validation-message {
       margin-top: 0;
     }
+    #signinSubmitBtn .btn-spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: #111;
+      border-radius: 50%;
+      display: none;
+      animation: spin 0.8s linear infinite;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+    #signinSubmitBtn.loading .btn-spinner {
+      display: inline-block;
+    }
+    #signinSubmitBtn.loading .btn-text {
+      opacity: 0.7;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
   </style>
 </head>
 
@@ -65,7 +85,7 @@
 
 
     <div class="signup-right">
-      <form method="POST" action="{% url 'signin' %}">
+      <form id="signinForm" method="POST" action="{% url 'signin' %}">
         {% csrf_token %}
         <label for="fullname">User Name</label>
         <input type="text" name="username" id="fullname" placeholder="John Doe" required />
@@ -87,7 +107,10 @@
           {% endif %}
         </div>
 
-        <button type="submit" class="btn-primary">Sign In</button>
+        <button type="submit" id="signinSubmitBtn" class="btn-primary">
+          <span class="btn-text">Sign In</span>
+          <span class="btn-spinner" aria-hidden="true"></span>
+        </button>
 
         <p class="login-link">Don't have an account? <a href="{% url 'signup' %}">Sign Up</a></p>
       </form>
@@ -95,6 +118,56 @@
   </main>
 
   <script src="{% static 'dashboard.js' %}"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const signinForm = document.getElementById('signinForm');
+      const validationMsg = document.getElementById('passwordValidationMessage');
+      const submitBtn = document.getElementById('signinSubmitBtn');
+
+      if (signinForm) {
+        signinForm.addEventListener('submit', async function(e) {
+          e.preventDefault(); // Prevents page reload & form clearing
+
+          if (validationMsg) validationMsg.style.display = 'none';
+          if (submitBtn) {
+            submitBtn.classList.add('loading');
+            submitBtn.disabled = true;
+          }
+
+          const formData = new FormData(signinForm);
+
+          try {
+            const response = await fetch(signinForm.action, {
+              method: 'POST',
+              headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': getCookie('csrftoken')
+              },
+              body: formData
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+              window.location.href = data.redirect_url || '/dashboard/';
+            } else {
+              if (validationMsg) {
+                validationMsg.innerHTML = `<p>${data.error || 'Invalid credentials.'}</p>`;
+                validationMsg.style.display = 'block';
+              }
+            }
+          } catch (err) {
+            signinForm.submit();
+          } finally {
+            if (submitBtn) {
+              submitBtn.classList.remove('loading');
+              submitBtn.disabled = false;
+            }
+          }
+        });
+      }
+    });
+  </script>
 
 </body>
 

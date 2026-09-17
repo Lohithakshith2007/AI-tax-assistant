@@ -51,6 +51,26 @@
     .signup-right .password-validation-message {
       margin-top: 0;
     }
+    #passwordSubmitBtn .btn-spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: #111;
+      border-radius: 50%;
+      display: none;
+      animation: spin 0.8s linear infinite;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+    #passwordSubmitBtn.loading .btn-spinner {
+      display: inline-block;
+    }
+    #passwordSubmitBtn.loading .btn-text {
+      opacity: 0.7;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
   </style>
 </head>
 
@@ -144,11 +164,59 @@
 
   <script src="{% static 'dashboard.js' %}"></script>
   <script>
-    // Detect and store user's timezone on signup
     document.addEventListener('DOMContentLoaded', function() {
+      // Detect and store user's timezone on signup
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       const timezoneField = document.getElementById('timezone');
       if (timezoneField) timezoneField.value = timezone;
+
+      // AJAX form submission using preventDefault to prevent input field clearing on error
+      const signupForm = document.getElementById('signupForm');
+      const validationMsg = document.getElementById('passwordValidationMessage');
+      const submitBtn = document.getElementById('passwordSubmitBtn');
+
+      if (signupForm) {
+        signupForm.addEventListener('submit', async function(e) {
+          e.preventDefault(); // Prevents page reload & form clearing
+
+          if (validationMsg) validationMsg.style.display = 'none';
+          if (submitBtn) {
+            submitBtn.classList.add('loading');
+            submitBtn.disabled = true;
+          }
+
+          const formData = new FormData(signupForm);
+
+          try {
+            const response = await fetch(signupForm.action, {
+              method: 'POST',
+              headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': getCookie('csrftoken')
+              },
+              body: formData
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+              window.location.href = data.redirect_url || '/dashboard/';
+            } else {
+              if (validationMsg) {
+                validationMsg.innerHTML = `<p>${data.error || 'Signup failed. Please try again.'}</p>`;
+                validationMsg.style.display = 'block';
+              }
+            }
+          } catch (err) {
+            signupForm.submit();
+          } finally {
+            if (submitBtn) {
+              submitBtn.classList.remove('loading');
+              window.updatePasswordSubmitState();
+            }
+          }
+        });
+      }
     });
   </script>
 
