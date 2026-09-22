@@ -38,11 +38,11 @@
         <nav class="sidebar-nav">
             <a href="{% url 'dashboard' %}" class="nav-item">
                 <span class="nav-icon"><i class="fa-solid fa-chart-simple"></i></span>
-                <span class="nav-label">Overview</span>
+                <span class="nav-label">Dashboard</span>
             </a>
             <a href="{% url 'calculator' %}" class="nav-item">
                 <span class="nav-icon"><i class="fa-solid fa-calculator"></i></span>
-                <span class="nav-label">Tax Calculator</span>
+                <span class="nav-label">Tax Planner</span>
             </a>
             <a href="{% url 'history' %}" class="nav-item">
                 <span class="nav-icon"><i class="fa-solid fa-clock-rotate-left"></i></span>
@@ -50,12 +50,12 @@
             </a>
             <a href="{% url 'chat' %}" class="nav-item">
                 <span class="nav-icon"><i class="fa-solid fa-robot"></i></span>
-                <span class="nav-label">AI Chat</span>
+                <span class="nav-label">Tax Advisor</span>
             </a>
             {% if request.user.is_authenticated and request.user.profile.role == 'admin' %}
             <a href="{% url 'analytics_dashboard' %}" class="nav-item">
                 <span class="nav-icon"><i class="fa-solid fa-chart-line"></i></span>
-                <span class="nav-label">Analytics</span>
+                <span class="nav-label">Insights</span>
             </a>
             {% endif %}
         </nav>
