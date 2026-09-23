@@ -1,7 +1,7 @@
 {% extends 'base_app.html' %}
 {% load tax_tags humanize %}
 
-{% block title %}Overview - AI Tax Assistant{% endblock %}
+{% block title %}Overview - TaxCalci{% endblock %}
 {% block page_title %}Overview{% endblock %}
 
 {% block content %}
@@ -41,7 +41,7 @@
                 <p class="text-muted text-sm mb-4" style="line-height: 1.6; max-width: 600px;">Use our AI-powered calculator to get instant breakdowns, smart deduction strategies, and compliance checks customized for your operational region.</p>
                 <div style="display: flex; gap: 1rem;">
                     <a href="{% url 'calculator' %}" class="btn-primary"><i class="fa-solid fa-calculator"></i> Open Tax Calculator</a>
-                    <a href="{% url 'chat' %}" class="know-more-btn"><i class="fa-solid fa-robot"></i> Consult AI Advisor</a>
+                    <a href="{% url 'chat' %}" class="know-more-btn"><i class="fa-solid fa-robot"></i> Ask TaxCalci AI </a>
                 </div>
             </div>
             <div style="font-size: 8rem; color: rgba(255,255,255,0.03); transform: rotate(15deg);">

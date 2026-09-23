@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Dashboard - AI Tax Assistant{% endblock %}</title>
+    <title>{% block title %}Dashboard - TaxCalci{% endblock %}</title>
     <meta name="user-id" content="{{ request.user.id|default:'' }}">
 
     <!-- Font Awesome -->
@@ -31,7 +31,7 @@
     <!-- SIDEBAR NAVIGATION -->
     <aside class="app-sidebar" id="appSidebar">
         <div class="sidebar-header">
-            <span class="logo">AI Tax Assistant</span>
+            <span class="logo">TaxCalci</span>
             <button class="icon-btn" id="toggleSidebar"><i class="fa-solid fa-bars"></i></button>
         </div>
 
@@ -50,7 +50,7 @@
             </a>
             <a href="{% url 'chat' %}" class="nav-item">
                 <span class="nav-icon"><i class="fa-solid fa-robot"></i></span>
-                <span class="nav-label">Tax Advisor</span>
+                <span class="nav-label">TaxCalci AI</span>
             </a>
             {% if request.user.is_authenticated and request.user.profile.role == 'admin' %}
             <a href="{% url 'analytics_dashboard' %}" class="nav-item">

@@ -3,5 +3,6 @@
     "python-envs.defaultPackageManager": "ms-python.python:pip",
     "[html]": {
         "editor.formatOnSave": false
-    }
+    },
+    "python.terminal.activateEnvironment": true
 }
